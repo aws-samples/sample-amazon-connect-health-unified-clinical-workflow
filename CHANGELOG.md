@@ -3,6 +3,15 @@
 All notable changes to this sample are documented here. This project follows
 [Semantic Versioning](https://semver.org/) for releases tagged in git.
 
+## [Unreleased]
+
+### Changed
+- Minor text edits and restructure: reordered README to lead with
+  "What this sample shows" → "Architecture" → "Repository structure"
+  before audience routing; replaced em-dashes in prose with colons
+  (heading labels, list items) and commas/parentheses (mid-sentence)
+  for cleaner reading.
+
 ## [0.1.0] - 2026-06-27
 
 Initial release.

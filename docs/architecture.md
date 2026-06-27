@@ -32,29 +32,29 @@ clinician reviews, approves, and the data writes to AWS HealthLake.
 
 ### Figure 1 components
 
-1. **Patient phone** — dials in to the clinic's Amazon Connect number.
-2. **Amazon Connect** — Contact Flow handles call routing, DTMF
+1. **Patient phone**: dials in to the clinic's Amazon Connect number.
+2. **Amazon Connect**: Contact Flow handles call routing, DTMF
    verification, and media streaming activation.
-3. **AWS Lambda (patient verification)** — invoked from Contact Flow,
+3. **AWS Lambda (patient verification)**: invoked from Contact Flow,
    queries AWS HealthLake for a matching Patient resource using caller
    phone number and DTMF-entered DOB.
-4. **AWS HealthLake** — FHIR R4 datastore. Holds Patient, Encounter,
+4. **AWS HealthLake**: FHIR R4 datastore. Holds Patient, Encounter,
    DocumentReference, Condition, Observation, MedicationRequest resources.
-5. **Amazon Kinesis Video Streams** — receives call audio when Contact
+5. **Amazon Kinesis Video Streams**: receives call audio when Contact
    Flow activates Start Media Streaming.
-6. **Amazon ECS on AWS Fargate (audio bridge)** — Java service that
+6. **Amazon ECS on AWS Fargate (audio bridge)**: Java service that
    consumes KVS audio fragments, upsamples 8kHz → 16kHz PCM, and streams
    to Amazon Connect Health ambient documentation.
-7. **Amazon Connect Health** — point-of-care capabilities (patient
+7. **Amazon Connect Health**: point-of-care capabilities (patient
    insights, ambient documentation, medical coding).
-8. **Amazon Connect Agent Workspace** — hosts the Clinical Workspace
+8. **Amazon Connect Agent Workspace**: hosts the Clinical Workspace
    third-party application.
-9. **Clinical Workspace** — frontend (CloudFront + S3) and backend (ECS
-   Fargate, Python Flask) — renders patient chart, live transcript,
+9. **Clinical Workspace**: frontend (CloudFront + S3) and backend (ECS
+   Fargate, Python Flask), renders patient chart, live transcript,
    SOAP notes, medical codes, and after-visit summary.
-10. **Amazon S3** — stores ambient-documentation output (SOAP, codes,
+10. **Amazon S3**: stores ambient-documentation output (SOAP, codes,
     after-visit summary, transcript).
-11. **AWS Lambda + Amazon SNS** — S3 event triggers SMS delivery of the
+11. **AWS Lambda + Amazon SNS**: S3 event triggers SMS delivery of the
     after-visit summary to the patient.
 
 ### Data flow
@@ -92,24 +92,24 @@ Patient phone ──→ Amazon Connect Contact Flow
 
 A care manager opens the Care Intelligence workspace, types a question in
 natural language. Amazon Bedrock Agents reason about the question, call an
-action group (one Lambda per task — patient summary, recent visit, A1c
+action group (one Lambda per task, patient summary, recent visit, A1c
 trend, overdue A1c, no-show patients, diabetic risk), the Lambda queries
 HealthLake, and the agent composes a natural-language response.
 
 ### Figure 2 components
 
-1. **Care manager** — interacts with a browser-based chat interface.
-2. **Amazon Connect Agent Workspace** — hosts the Care Intelligence
+1. **Care manager**: interacts with a browser-based chat interface.
+2. **Amazon Connect Agent Workspace**: hosts the Care Intelligence
    third-party application.
-3. **Care Intelligence app** — frontend (CloudFront) + backend (ECS
+3. **Care Intelligence app**: frontend (CloudFront) + backend (ECS
    Fargate Python proxy).
-4. **Amazon Bedrock Agent** — Anthropic Claude model with action groups.
-5. **Action group OpenAPI schemas** — stored in S3, describe the
+4. **Amazon Bedrock Agent**: Anthropic Claude model with action groups.
+5. **Action group OpenAPI schemas**: stored in S3, describe the
    available tools to the agent.
-6. **AWS Lambda functions** — one per action group, fulfill the agent's
+6. **AWS Lambda functions**: one per action group, fulfill the agent's
    tool calls.
-7. **AWS HealthLake** — same datastore as the provider workflow.
-8. **Foundation model** — composes natural-language answers from tool
+7. **AWS HealthLake**: same datastore as the provider workflow.
+8. **Foundation model**: composes natural-language answers from tool
    results.
 
 ### Data flow
@@ -158,7 +158,7 @@ Care manager ──→ Agent Workspace ──→ Care Intelligence app
 - All inter-service traffic is HTTPS / TLS.
 - S3 objects are encrypted at rest with AWS KMS (default keys; production
   should use customer-managed keys).
-- ECS task roles follow least privilege — scoped to a single HealthLake
+- ECS task roles follow least privilege: scoped to a single HealthLake
   datastore, S3 bucket, Connect Health domain, and Bedrock model.
 - CloudFront distributions sit in front of both ALBs; origin access
   uses signed requests.

@@ -11,9 +11,9 @@ deployment built on this code.
 
 ### 1. Human-in-the-Loop is Mandatory
 
-Every AI-generated clinical artifact in this sample — SOAP notes, ICD-10 and
+Every AI-generated clinical artifact in this sample, SOAP notes, ICD-10 and
 CPT codes, patient insights summaries, after-visit summaries, and Bedrock
-synthesized narratives — is shown to a licensed healthcare provider for
+synthesized narratives, is shown to a licensed healthcare provider for
 review and explicit approval before being persisted to the patient record or
 delivered to the patient.
 

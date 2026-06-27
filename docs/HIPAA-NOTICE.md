@@ -83,11 +83,11 @@ Before processing real PHI on any deployment derived from this sample:
 
 - **State law variations** in healthcare privacy and AI regulation
 - **International healthcare privacy regulations** (GDPR for EU, PIPEDA
-  for Canada, etc.) — only US HIPAA is addressed
-- **FDA regulations on clinical decision support software** — this
+  for Canada, etc.), only US HIPAA is addressed
+- **FDA regulations on clinical decision support software**: this
   sample provides documentation support, not diagnostic decision support,
   but the line between the two is not always clear and depends on use
-- **Specific certifications** like SOC 2, HITRUST, or ONC — these are
+- **Specific certifications** like SOC 2, HITRUST, or ONC: these are
   inherited from AWS for the underlying services, but the application
   built on top must be assessed independently
 

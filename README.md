@@ -4,9 +4,9 @@ A two-part sample demonstrating how to build provider and care-manager
 workflows on AWS using Amazon Connect Health, AWS HealthLake, and Amazon
 Bedrock. Companion code for the AWS for Industries blog series:
 
-- **Part 1** — Building a unified clinical workflow on Amazon Connect: From
+- **Part 1**: Building a unified clinical workflow on Amazon Connect: From
   patient call to documentation in a single workspace
-- **Part 2** — Closing the loop: From clinical documentation to care manager
+- **Part 2**: Closing the loop: From clinical documentation to care manager
   insight with Amazon Bedrock and AWS HealthLake
 
 > ⚠️ **Sample / not for production without configuration.** Before
@@ -16,43 +16,6 @@ Bedrock. Companion code for the AWS for Industries blog series:
 > [`RESPONSIBLE_AI.md`](RESPONSIBLE_AI.md).
 
 
-## Who is this for?
-
-This repository serves two distinct audiences. **Pick the path that fits
-your goal — the two are different experiences with different requirements.**
-
-### 🧑⚕️ "I want to see what this looks like" — no AWS account needed
-
-Healthcare leaders, blog readers, AWS Solutions Architects pitching this
-to customers, anyone evaluating the architecture before committing
-deployment effort.
-
-→ **Run [demo mode](docs/demo-mode-guide.md)** on your laptop. Clones the
-repo, runs `python3 server.py --demo`, opens a browser. Shows the
-Clinical Workspace UI populated with cached Synthea-generated patient
-data. No AWS credentials, no AWS account, no Docker, no infrastructure.
-
-What you'll see: provider workflow UX, patient pre-visit insights, AI-
-generated SOAP notes, medical codes, after-visit summary, and the
-AI-content disclaimers.
-
-### 🛠️ "I want to deploy this into my AWS account" — AWS account required
-
-Healthcare organizations' cloud teams, AWS partner SAs building reference
-implementations, anyone planning to wire real Amazon Connect, AWS
-HealthLake, and Amazon Bedrock together.
-
-→ **Follow the [deployment guide](docs/deployment-guide.md)**.
-You'll need AWS CLI access, an AWS account with Amazon Connect /
-Connect Health / HealthLake / Bedrock enabled, Docker for building
-images, and (for production) a Business Associate Addendum executed
-with AWS. See [`DEPLOYMENT_NOTES.md`](DEPLOYMENT_NOTES.md) for
-practical engineering guidance.
-
-What you'll get: live phone-call → ambient-documentation → FHIR
-writeback for the provider workflow, plus a Bedrock Agent answering
-natural-language clinical questions for the care manager workflow.
-
 ## What this sample shows
 
 Two complementary workflows on top of a single Amazon Connect Health domain,
@@ -61,9 +24,9 @@ sharing one AWS HealthLake datastore:
 ### Provider workflow (Part 1)
 
 A clinician handles an entire patient encounter inside the Amazon Connect
-Agent Workspace. Five Amazon Connect Health capabilities — patient
+Agent Workspace. Five Amazon Connect Health capabilities (patient
 verification, appointment management, patient insights, ambient
-documentation, and medical coding — are brought into the workspace through
+documentation, and medical coding) are brought into the workspace through
 a third-party application. The clinician answers a verified call to a
 fully-prepared chart, has a normal conversation while the system listens
 and structures it, reviews and approves AI-generated SOAP notes and medical
@@ -72,7 +35,7 @@ codes, and the data lands in AWS HealthLake as standard FHIR R4 resources.
 ### Care manager workflow (Part 2)
 
 A care manager queries the same FHIR data in natural language through a
-second third-party application — also embedded in Amazon Connect Agent
+second third-party application, also embedded in Amazon Connect Agent
 Workspace. Amazon Bedrock Agents reason over the question, call action
 groups (one Lambda per domain task), retrieve FHIR resources from
 HealthLake, and compose a natural-language response. No ETL pipeline. No
@@ -81,7 +44,7 @@ batch jobs. Today's encounters are queryable today.
 ## Architecture
 
 The two workflows share one Amazon Connect Health domain and one HealthLake
-datastore — the data the clinician writes is the data the care manager
+datastore, the data the clinician writes is the data the care manager
 reads.
 
 > 📊 **Architecture diagram coming soon.** A polished diagram is being
@@ -146,13 +109,50 @@ sample-amazon-connect-health-unified-clinical-workflow/
 └── .gitlab/                     ← MR templates
 ```
 
-## Quick start (demo audience) — no AWS account
+## Who is this for?
+
+This repository serves two distinct audiences. **Pick the path that fits
+your goal. The two are different experiences with different requirements.**
+
+### 🧑⚕️ "I want to see what this looks like": no AWS account needed
+
+Healthcare leaders, blog readers, AWS Solutions Architects pitching this
+to customers, anyone evaluating the architecture before committing
+deployment effort.
+
+→ **Run [demo mode](docs/demo-mode-guide.md)** on your laptop. Clones the
+repo, runs `python3 server.py --demo`, opens a browser. Shows the
+Clinical Workspace UI populated with cached Synthea-generated patient
+data. No AWS credentials, no AWS account, no Docker, no infrastructure.
+
+What you'll see: provider workflow UX, patient pre-visit insights, AI-
+generated SOAP notes, medical codes, after-visit summary, and the
+AI-content disclaimers.
+
+### 🛠️ "I want to deploy this into my AWS account": AWS account required
+
+Healthcare organizations' cloud teams, AWS partner SAs building reference
+implementations, anyone planning to wire real Amazon Connect, AWS
+HealthLake, and Amazon Bedrock together.
+
+→ **Follow the [deployment guide](docs/deployment-guide.md)**.
+You'll need AWS CLI access, an AWS account with Amazon Connect /
+Connect Health / HealthLake / Bedrock enabled, Docker for building
+images, and (for production) a Business Associate Addendum executed
+with AWS. See [`DEPLOYMENT_NOTES.md`](DEPLOYMENT_NOTES.md) for
+practical engineering guidance.
+
+What you'll get: live phone-call → ambient-documentation → FHIR
+writeback for the provider workflow, plus a Bedrock Agent answering
+natural-language clinical questions for the care manager workflow.
+
+## Quick start (demo audience): no AWS account
 
 **Audience**: anyone evaluating the architecture without an AWS account.
 
 Demo mode runs the provider workflow entirely on your laptop. It serves
 Synthea-generated synthetic FHIR data from `provider-workflow/backend/
-demo_cache/` instead of making real AWS API calls — no AWS credentials,
+demo_cache/` instead of making real AWS API calls, no AWS credentials,
 no AWS account required.
 
 **What it shows**: the Clinical Workspace UI, pre-visit insights for
@@ -163,7 +163,7 @@ all required AI-content disclaimers.
 **What it does not show**: a real phone call (no Amazon Connect),
 real-time ambient documentation, the Approve & Save path that writes to
 HealthLake, or the care manager workflow (a future release will add
-care manager demo mode — for now that workflow requires a deployed
+care manager demo mode, for now that workflow requires a deployed
 Bedrock Agent).
 
 ```bash
@@ -185,7 +185,7 @@ python3 server.py --demo
 See [`docs/demo-mode-guide.md`](docs/demo-mode-guide.md) for the full demo
 walkthrough.
 
-## Quick start (deploy audience) — requires AWS account
+## Quick start (deploy audience): requires AWS account
 
 **Audience**: cloud engineers deploying this into a real AWS account.
 
@@ -274,8 +274,8 @@ This sample is licensed under the MIT-0 license. See [`LICENSE`](LICENSE).
 
 ## Authors
 
-- **Ashish Panwar** — Technical Account Manager, AWS Healthcare
-- **Kas Parthasarathy** — Healthcare AI Go-to-Market Lead, AWS
+- **Ashish Panwar**: Technical Account Manager, AWS Healthcare
+- **Kas Parthasarathy**: Healthcare AI Go-to-Market Lead, AWS
 
 For questions about the sample, open an issue in this repository. For
 questions about Amazon Connect Health, AWS HealthLake, or Amazon Bedrock,

@@ -1,7 +1,7 @@
 # Deployment Notes
 
 Practical engineering notes for deploying this sample into an AWS account.
-These are guidance for the deploy-audience reader — things you'll want to
+These are guidance for the deploy-audience reader, things you'll want to
 know going in to make the deployment smoother.
 
 If you're running demo mode (`python3 server.py --demo` on your laptop),

@@ -23,7 +23,7 @@ For local demo without AWS credentials, see [`demo-mode-guide.md`](demo-mode-gui
 `us-east-1` is the recommended region as it has the broadest service
 availability for Amazon Connect Health and Amazon Bedrock at GA.
 
-## Step 1 — Deploy shared infrastructure
+## Step 1: Deploy shared infrastructure
 
 Deploys the HealthLake datastore, the Connect Health domain, and the S3
 bucket for clinical outputs.
@@ -36,12 +36,12 @@ aws cloudformation deploy \
   --region us-east-1
 ```
 
-Note the outputs — you'll need:
+Note the outputs, you'll need:
 - `HealthLakeDatastoreId`
 - `ConnectHealthDomainId`
 - `ClinicalOutputsBucketName`
 
-## Step 2 — Deploy the Bedrock Guardrail
+## Step 2: Deploy the Bedrock Guardrail
 
 Required for any production deployment. Optional but recommended even for
 synthetic-data testing.
@@ -55,11 +55,11 @@ aws cloudformation deploy \
   --parameter-overrides Environment=dev
 ```
 
-Note the outputs — you'll need:
+Note the outputs, you'll need:
 - `GuardrailId`
 - `GuardrailVersion`
 
-## Step 3 — Load synthetic FHIR data into HealthLake
+## Step 3: Load synthetic FHIR data into HealthLake
 
 ```bash
 cd shared/healthlake
@@ -72,7 +72,7 @@ This loads Synthea-generated FHIR resources for the three demo patients
 (Elena Rodriguez, Diego Ramirez, Márcia Oliveria). The script idempotently
 checks for existing resources and skips them on re-run.
 
-## Step 4 — Build and deploy the provider workflow
+## Step 4: Build and deploy the provider workflow
 
 ### 4a. Build the Java audio bridge
 
@@ -148,7 +148,7 @@ In Amazon Connect Console → Applications:
 3. URL: the CloudFront distribution URL from step 4b
 4. Add to the routing profile that should see this app
 
-## Step 5 — Deploy the care manager workflow
+## Step 5: Deploy the care manager workflow
 
 ### 5a. Deploy Bedrock Agent + action groups
 
@@ -168,18 +168,18 @@ aws cloudformation deploy \
 
 Same as 4f, but with the Care Intelligence CloudFront URL.
 
-## Step 6 — Smoke test
+## Step 6: Smoke test
 
 ### Provider workflow
 
 1. Call the Connect inbound number with one of the demo patient's
    numbers (or override via SSML)
 2. Enter the patient's DOB at the DTMF prompt
-3. Accept the call as a clinician — Clinical Workspace should open
+3. Accept the call as a clinician, Clinical Workspace should open
 4. Have a conversation (the audio bridge streams to ambient docs)
 5. Hang up
 6. Within ~60 seconds, the workspace should display SOAP notes
-7. Click "Approve & Save" — verify a new Encounter resource appears in
+7. Click "Approve & Save", verify a new Encounter resource appears in
    HealthLake
 8. Verify the patient receives an SMS
 

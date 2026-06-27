@@ -36,7 +36,7 @@ This policy does **not** cover:
 
 - Issues with Amazon Connect Health, AWS HealthLake, Amazon Bedrock, or other
   AWS services (report those directly to AWS Security)
-- Issues in dependencies (Python, Node, Java packages) — report those to the
+- Issues in dependencies (Python, Node, Java packages): report those to the
   upstream maintainer
 
 ## Healthcare-Specific Notes

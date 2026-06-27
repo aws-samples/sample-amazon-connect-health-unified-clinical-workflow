@@ -71,13 +71,13 @@ from `demo_cache/synthesize_previsit_<mrn>.json`. You'll see:
 
 ### 3. Patient insights
 
-Click "Load Patient Insights" — returns cached Amazon Connect Health
+Click "Load Patient Insights", returns cached Amazon Connect Health
 Patient Insights output from `demo_cache/patient_insights_<mrn>.json`,
 showing structured clinical sections.
 
 ### 4. Simulated consultation
 
-The "Start Consultation" flow is gated — in demo mode it can't actually
+The "Start Consultation" flow is gated, in demo mode it can't actually
 record audio, but it walks through the consent banner and reminds the
 patient that AI assistance will be used.
 
@@ -97,7 +97,7 @@ SOAP note for a hypertension + tension-headache visit, including:
 ### 6. Approve & save (no-op in demo)
 
 The "Approve & Save" button is disabled in demo mode (it would normally
-write FHIR resources to HealthLake — there's nothing to write to). The
+write FHIR resources to HealthLake, there's nothing to write to). The
 disclaimer banner remains visible to demonstrate the human-in-the-loop
 requirement.
 
