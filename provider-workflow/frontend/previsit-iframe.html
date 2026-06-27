@@ -1529,7 +1529,7 @@
                 // Build evidence lookup from clinical narrative for text matching in priorities
                 buildClinicalEvidenceLookup(clinicalNarrative);
                 
-                const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+                const backendUrl = window.parent.BACKEND_URL || '';
                 const resp = await fetch(`${backendUrl}/api/synthesize-previsit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1688,7 +1688,7 @@
         // Synthesize patient narrative using Bedrock
         async function synthesizePatientNarrative(sections, patient, summaryEl, fallbackHtml) {
             try {
-                const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+                const backendUrl = window.parent.BACKEND_URL || '';
                 const resp = await fetch(`${backendUrl}/api/synthesize-narrative`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1739,7 +1739,7 @@
             }
             
             try {
-                const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+                const backendUrl = window.parent.BACKEND_URL || '';
                 const resp = await fetch(`${backendUrl}/api/synthesize-priorities`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1998,7 +1998,7 @@
             }
             
             // Fetch FHIR metadata for each unique ref
-            const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+            const backendUrl = window.parent.BACKEND_URL || '';
             let html = '';
             const uniqueRefs = [...allRefs];
             
@@ -2080,7 +2080,7 @@
             
             // Fetch FHIR resource details
             const body = popover.querySelector('.evidence-popover-body');
-            const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+            const backendUrl = window.parent.BACKEND_URL || '';
             let html = '';
             
             // Deduplicate refs
@@ -2187,7 +2187,7 @@
         
         // Download full FHIR resource as JSON file
         async function downloadFhirResource(resourceType, resourceId) {
-            const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+            const backendUrl = window.parent.BACKEND_URL || '';
             try {
                 const resp = await fetch(`${backendUrl}/api/fhir/${resourceType}/${resourceId}?full=true`);
                 const data = await resp.json();

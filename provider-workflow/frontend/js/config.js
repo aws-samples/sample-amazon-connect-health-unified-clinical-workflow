@@ -17,6 +17,26 @@
     // DEMO MODE
     // ==========================================================================
     window.DEMO_MODE = localStorage.getItem('demoMode') === 'true';
+
+    // Auto-detect: if the backend was started with --demo, enable demo mode
+    // in the browser too so the user doesn't have to press Ctrl+Shift+D.
+    // This runs synchronously-ish at page load — we don't await it, but the
+    // page itself doesn't fire API calls until after DOMContentLoaded, so by
+    // then DEMO_MODE will be set correctly.
+    (function autoDetectDemoMode() {
+        try {
+            fetch('/api/demo/status', { method: 'GET' })
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(data) {
+                    if (data && data.demoModeForced && !window.DEMO_MODE) {
+                        console.log('[Demo] Backend started with --demo. Auto-enabling demo mode.');
+                        localStorage.setItem('demoMode', 'true');
+                        location.reload();
+                    }
+                })
+                .catch(function() { /* silent — backend may not be reachable yet */ });
+        } catch (e) { /* silent */ }
+    })();
     
     window.demoHeaders = function(extra) {
         const h = extra ? Object.assign({}, extra) : {};
@@ -92,7 +112,7 @@
     const configs = {
         local: {
             WS_URL: 'ws://localhost:8081/stream',
-            BACKEND_URL: 'http://localhost:5000',
+            BACKEND_URL: '',  // same-origin: Flask serves both frontend and API on the same port
             ENV_NAME: 'local'
         },
         deployed: {

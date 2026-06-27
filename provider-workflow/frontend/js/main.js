@@ -5884,7 +5884,7 @@ function startProcessingWorkflowInOverlay() {
  */
 async function startRealProcessingWithS3Polling() {
     const sessionId = currentStreamingSessionId;
-    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = window.BACKEND_URL || '';
     
     if (!sessionId) {
         console.log('[Processing] No session ID, using simulated steps');
@@ -6344,7 +6344,7 @@ async function showSoapNotes() {
         processingS3Data = null;
     } else if (currentStreamingSessionId && (!streamingSessionOutputs || !streamingSessionOutputs.clinicalDoc)) {
         console.log('[SOAP] Fetching S3 outputs for session:', currentStreamingSessionId);
-        const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = window.BACKEND_URL || '';
         try {
             const response = await fetch(`${backendUrl}/api/streaming/session/${currentStreamingSessionId}/outputs`);
             const result = await response.json();
@@ -6364,7 +6364,7 @@ async function showSoapNotes() {
  * @param {number} retryCount - Number of retries (for waiting for S3 data)
  */
 async function fetchAndDisplayStreamingOutputs(sessionId, retryCount = 0) {
-    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = window.BACKEND_URL || '';
     const MAX_RETRIES = 20;  // 20 retries x 3 seconds = 60 seconds max wait
     const RETRY_DELAY = 3000; // 3 seconds between retries
     
@@ -6468,7 +6468,7 @@ async function fetchAndDisplayStreamingOutputs(sessionId, retryCount = 0) {
  * @param {number} retryCount - Number of retries
  */
 async function fetchMedicalCodesOnly(sessionId, retryCount = 0) {
-    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = window.BACKEND_URL || '';
     const MAX_RETRIES = 20;  // 20 retries x 3 seconds = 60 seconds max wait
     const RETRY_DELAY = 3000;
     
@@ -6515,7 +6515,7 @@ async function fetchMedicalCodesOnly(sessionId, retryCount = 0) {
  */
 async function fetchAndDisplayAfterVisitSummary() {
     const sessionId = currentStreamingSessionId;
-    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = window.BACKEND_URL || '';
     const contentDiv = document.getElementById('afterVisitSummaryContent');
     
     if (!contentDiv) return;
@@ -6621,7 +6621,7 @@ function displayAfterVisitSummary(avsData) {
  */
 async function fetchAndPopulatePatientVisitSummary() {
     const sessionId = currentStreamingSessionId;
-    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = window.BACKEND_URL || '';
     
     const loadingDiv = document.getElementById('patientSummaryLoading');
     const contentDiv = document.getElementById('patientSummaryContent');
@@ -7536,7 +7536,7 @@ function editSoapNotes() {
 async function pollForMedicalCodes(sessionId, attempt = 0) {
     const MAX_ATTEMPTS = 30; // 30 x 3s = 90 seconds
     const DELAY = 3000;
-    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = window.BACKEND_URL || '';
 
     try {
         const resp = await fetch(`${backendUrl}/api/streaming/session/${sessionId}/medical-codes`);
@@ -9188,7 +9188,7 @@ async function fetchMedicalCodes(clinicalText, patientContext = null, encounterC
             requestBody.encounterContext = encounterContext;
         }
         
-        const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = window.BACKEND_URL || '';
         console.log('Calling /api/medical-codes with text length:', clinicalText.length);
         
         const response = await fetch(`${backendUrl}/api/medical-codes`, {
@@ -9959,7 +9959,7 @@ async function sendFollowupSMS() {
     const messageTextarea = document.getElementById('smsMessageTextarea');
     const sendBtn = document.getElementById('smsSendBtn');
     const statusContainer = document.getElementById('smsStatusContainer');
-    const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = window.BACKEND_URL || '';
     
     if (!phoneInput || !messageTextarea || !sendBtn) return;
     

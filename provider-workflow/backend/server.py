@@ -74,9 +74,13 @@ init_auth(app)
 
 @app.route('/api/demo/status', methods=['GET'])
 def demo_status():
-    """Check if demo mode is active for this request."""
+    """Check if demo mode is active for this request, and whether the
+    server was started with --demo (in which case the frontend should
+    self-enable demo mode without needing the user to press Ctrl+Shift+D).
+    """
     return jsonify({
         "demoMode": is_demo_request(),
+        "demoModeForced": DEMO_MODE,
         "recording": DEMO_RECORD
     })
 

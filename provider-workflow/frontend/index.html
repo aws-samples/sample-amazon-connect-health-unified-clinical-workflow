@@ -1296,7 +1296,7 @@
         console.log('Loading patients from HealthLake...');
         
         try {
-            const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+            const backendUrl = window.BACKEND_URL || '';
             const response = await fetch(backendUrl + '/api/patients');
             const data = await response.json();
             
@@ -1437,7 +1437,7 @@
         // Show loading indicator
         showInsightsLoading();
         
-        const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = window.BACKEND_URL || '';
         
         try {
             // Start the job (non-blocking)
@@ -1480,7 +1480,7 @@
     async function pollForInsights(jobArn, patientKey) {
         const maxAttempts = 120; // 10 minutes (120 × 5 seconds)
         const pollInterval = 5000; // 5 seconds
-        const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+        const backendUrl = window.BACKEND_URL || '';
         
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
@@ -1707,7 +1707,7 @@
     });
 
     console.log('Patient Insights integration loaded');
-    console.log('Backend proxy:', window.BACKEND_URL || 'http://localhost:5000');
+    console.log('Backend proxy:', window.BACKEND_URL || '');
 </script>
 
 <!-- Amazon Connect CCP container (Phase 1) -->

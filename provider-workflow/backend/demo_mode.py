@@ -24,7 +24,27 @@ DEMO_RECORD = os.environ.get('DEMO_RECORD', 'false').lower() == 'true'
 
 
 def is_demo_request():
-    """Check if the current request has the demo mode header."""
+    """Return True if demo mode applies to the current request.
+
+    Demo mode is on when EITHER:
+      - The server was started with --demo (process-wide flag), OR
+      - The browser sent X-Demo-Mode: true header (per-request opt-in)
+
+    This means `python3 server.py --demo` is sufficient to demo without
+    any browser-side configuration.
+    """
+    # Check server-startup flag first (process-wide). We import lazily to
+    # avoid a circular import with server.py.
+    try:
+        from server import DEMO_MODE as _SERVER_DEMO_MODE
+        if _SERVER_DEMO_MODE:
+            return True
+    except (ImportError, AttributeError):
+        pass
+
+    # Fall back to per-request header (used in deployed environments where
+    # the backend isn't restarted with --demo but the operator wants to
+    # demo via a toggle in the UI).
     from flask import request
     return request.headers.get('X-Demo-Mode', '').lower() == 'true'
 

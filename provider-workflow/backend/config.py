@@ -87,12 +87,15 @@ DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # CORS - Allow frontend to call backend
 # Add your CloudFront distribution URLs here after deployment.
-CORS_ORIGINS = [
-    "http://localhost:5000",
-    "http://localhost:8000",
-    "http://127.0.0.1:5000",
-    "http://127.0.0.1:8000",
-]
+#
+# Includes localhost on the configured SERVER_PORT (auto-derived) plus
+# common dev ports (3000, 5000, 5001, 5002, 8000, 8080) so local
+# development doesn't break when AirPlay grabs port 5000 on macOS.
+_COMMON_DEV_PORTS = [3000, 5000, 5001, 5002, 8000, 8080, SERVER_PORT]
+CORS_ORIGINS = []
+for _port in set(_COMMON_DEV_PORTS):
+    CORS_ORIGINS.append(f"http://localhost:{_port}")
+    CORS_ORIGINS.append(f"http://127.0.0.1:{_port}")
 _extra_cors = os.environ.get("CORS_ORIGINS", "")
 if _extra_cors:
     if _extra_cors.strip() == "*":

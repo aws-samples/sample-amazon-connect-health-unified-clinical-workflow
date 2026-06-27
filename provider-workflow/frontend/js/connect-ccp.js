@@ -217,8 +217,10 @@
         }
     }
 
-    const CCP_URL = 'https://connect-health-demo-east.my.connect.aws/ccp-v2';
-    const BACKEND_URL = window.BACKEND_URL || 'http://localhost:5000';
+    // CCP URL — read from runtime config so this isn't hardcoded.
+    // Set window.CCP_URL in config.js or via deployment-time substitution.
+    const CCP_URL = (window.CCP_URL || 'https://REPLACE_WITH_YOUR_CONNECT_INSTANCE.my.connect.aws/ccp-v2');
+    const BACKEND_URL = window.BACKEND_URL || '';
     const TRANSCRIPT_POLL_INTERVAL_MS = 2000;
 
     let initialized = false;
@@ -227,6 +229,14 @@
 
     function init() {
         if (initialized) return;
+        // Demo mode: skip CCP entirely. There's no Amazon Connect instance
+        // to embed when running locally without AWS — the iframe load would
+        // fail with a CSP frame-ancestors error from the Connect domain.
+        if (window.DEMO_MODE) {
+            initialized = true;
+            console.log('[CCP] Demo mode detected — skipping CCP iframe initialization');
+            return;
+        }
         if (typeof window.connect === 'undefined' || !window.connect.core) {
             setTimeout(init, 250);
             return;
