@@ -1,0 +1,248 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ConnectHealth Streaming - ECR Repository and CodeBuild Project'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+
+Resources:
+  # ECR Repository
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+    Properties:
+      RepositoryName: !Sub 'connect-health-streaming-${Environment}'
+      EmptyOnDelete: true
+      ImageTagMutability: IMMUTABLE
+      EncryptionConfiguration:
+        EncryptionType: AES256  # checkov:skip=CKV_AWS_136: AES256 used; KMS CMK not required for a demo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  # S3 Bucket for source code
+  SourceBucket:
+    Type: AWS::S3::Bucket  # checkov:skip=CKV_AWS_18: Access logging not required for a demo/POC
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W35
+            reason: "Access logging not required for a demo/POC — adds operational overhead"
+    Properties:
+      BucketName: !Sub 'connect-health-streaming-source-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # Bucket policy — deny non-HTTPS access
+  SourceBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SourceBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyNonHTTPS
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt SourceBucket.Arn
+              - !Sub '${SourceBucket.Arn}/*'
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+
+  # Lambda role for emptying the versioned S3 bucket on stack deletion
+  EmptyBucketLambdaRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+    Properties:
+      RoleName: !Sub 'connect-health-streaming-empty-bucket-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: EmptyBucketPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:ListBucketVersions
+                  - s3:DeleteObject
+                  - s3:DeleteObjectVersion
+                Resource:
+                  - !GetAtt SourceBucket.Arn
+                  - !Sub '${SourceBucket.Arn}/*'
+
+  EmptyBucketFunction:  # checkov:skip=CKV_AWS_117: One-shot CFN custom resource — VPC not needed  # checkov:skip=CKV_AWS_116: One-shot CFN custom resource — DLQ not needed
+    Type: AWS::Lambda::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W89
+            reason: "One-shot CloudFormation custom resource — VPC placement adds unnecessary complexity"
+          - id: W116
+            reason: "One-shot CloudFormation custom resource — DLQ not needed for synchronous CFN invocation"
+    Properties:
+      FunctionName: !Sub 'connect-health-streaming-empty-bucket-${Environment}'  # checkov:skip=CKV_AWS_116: One-shot CFN custom resource — DLQ not needed
+      Runtime: python3.12
+      Handler: index.handler
+      Timeout: 120
+      ReservedConcurrentExecutions: 1
+      Role: !GetAtt EmptyBucketLambdaRole.Arn
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import cfnresponse
+
+          def handler(event, context):
+              if event['RequestType'] != 'Delete':
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                  return
+              try:
+                  bucket = event['ResourceProperties']['BucketName']
+                  s3 = boto3.resource('s3')
+                  bucket_resource = s3.Bucket(bucket)
+                  bucket_resource.object_versions.all().delete()
+                  print(f'Emptied bucket {bucket}')
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+              except Exception as e:
+                  print(f'Error emptying bucket: {e}')
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {'Error': str(e)})
+
+  EmptyBucketOnDelete:
+    Type: Custom::EmptyBucket
+    Properties:
+      ServiceToken: !GetAtt EmptyBucketFunction.Arn
+      BucketName: !Ref SourceBucket
+
+  # CodeBuild Role
+  CodeBuildRole:
+    Type: AWS::IAM::Role  # checkov:skip=CKV_AWS_111: logs:* and ecr:GetAuthorizationToken require Resource '*' — standard CodeBuild pattern
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W11
+            reason: "logs:* and ecr:GetAuthorizationToken require Resource '*' — standard CodeBuild pattern"
+    Properties:
+      RoleName: !Sub 'connect-health-streaming-codebuild-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource: !Sub '${SourceBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - ecr:PutImage
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                Resource: !GetAtt ECRRepository.Arn
+
+  # CodeBuild Project
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W32
+            reason: "Using AWS managed key (alias/aws/s3) via EncryptionKey — no customer-managed key needed for a demo"
+    Properties:
+      Name: !Sub 'connect-health-streaming-build-${Environment}'
+      Description: Build ConnectHealth Streaming Docker image
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      EncryptionKey: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3'
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS::Region
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+          - Name: IMAGE_REPO_NAME
+            Value: !Ref ECRRepository
+      Source:
+        Type: S3
+        Location: !Sub '${SourceBucket}/source.zip'
+        BuildSpec: buildspec.yml
+      TimeoutInMinutes: 30
+
+Outputs:
+  ECRRepositoryURI:
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ECRRepositoryURI'
+  
+  SourceBucketName:
+    Value: !Ref SourceBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-SourceBucket'
+  
+  CodeBuildProjectName:
+    Value: !Ref CodeBuildProject
+    Export:
+      Name: !Sub '${AWS::StackName}-CodeBuildProject'

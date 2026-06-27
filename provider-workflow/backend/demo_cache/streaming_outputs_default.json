@@ -1,0 +1,112 @@
+{
+  "success": true,
+  "sessionId": "demo-session-001",
+  "outputs": {
+    "clinicalDoc": {
+      "ClinicalDocumentation": {
+        "Sections": [
+          {
+            "SectionName": "SUBJECTIVE",
+            "Summary": [
+              {
+                "SummarizedSegment": "Patient presents with complaints of persistent headaches over the past two weeks, described as a dull, throbbing pain primarily in the frontal region. She reports the headaches occur daily, typically worsening in the afternoon. She has been taking over-the-counter ibuprofen with minimal relief. She also notes elevated blood pressure readings at home, with recent readings around 145/92 mmHg. She denies any visual changes, nausea, or vomiting. No recent head trauma or new medications.\n\nREVIEW_OF_SYSTEMS\nConstitutional: Denies fever, chills, or weight changes.\nNeurological: Reports headaches as described. Denies dizziness, numbness, or tingling.\nCardiovascular: Notes elevated home blood pressure readings. Denies chest pain or palpitations.\n\nPast Medical History:\nHypertension, diagnosed 3 years ago.\nHyperlipidemia.\n\nMedications:\n- Lisinopril 10mg daily\n- Atorvastatin 20mg daily\n- Ibuprofen 400mg as needed\n"
+              }
+            ]
+          },
+          {
+            "SectionName": "OBJECTIVE",
+            "Summary": [
+              {
+                "SummarizedSegment": "Vital Signs: BP 142/90 mmHg, HR 78 bpm, Temp 98.6°F, RR 16, SpO2 99% on room air. General: Alert and oriented, no acute distress. HEENT: Normocephalic, atraumatic. Pupils equal, round, reactive to light. No papilledema on fundoscopic exam. Cardiovascular: Regular rate and rhythm, no murmurs, gallops, or rubs. Neurological: Cranial nerves II-XII intact. No focal deficits. Normal gait and coordination."
+              }
+            ]
+          },
+          {
+            "SectionName": "ASSESSMENT",
+            "Summary": [
+              {
+                "SummarizedSegment": "1. Tension-type headache, chronic\n2. Essential hypertension, suboptimally controlled\n3. Hyperlipidemia, stable on current therapy"
+              }
+            ]
+          },
+          {
+            "SectionName": "PLAN",
+            "Summary": [
+              {
+                "SummarizedSegment": "Tension-type headache:\n- Discontinue frequent ibuprofen use to avoid medication overuse headache\n- Start amitriptyline 10mg at bedtime for headache prophylaxis\n- Recommend stress management techniques and regular sleep schedule\n\nHypertension:\n- Increase lisinopril from 10mg to 20mg daily\n- Continue home blood pressure monitoring, target <130/80 mmHg\n- Reinforce low-sodium diet and regular exercise\n\nFollow-up:\n- Return in 4 weeks to reassess blood pressure and headache frequency\n- Order basic metabolic panel and lipid panel prior to next visit"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "medicalCodes": {
+      "medicalCodes": [
+        {
+          "name": "R51.9",
+          "system": "ICD10",
+          "description": "Headache, unspecified",
+          "confidence": 0.92,
+          "evidence": [{"text": "persistent headaches over the past two weeks", "startOffset": 0, "endOffset": 45}]
+        },
+        {
+          "name": "I10",
+          "system": "ICD10",
+          "description": "Essential (primary) hypertension",
+          "confidence": 0.95,
+          "evidence": [{"text": "elevated blood pressure readings at home", "startOffset": 0, "endOffset": 40}]
+        },
+        {
+          "name": "E78.5",
+          "system": "ICD10",
+          "description": "Hyperlipidemia, unspecified",
+          "confidence": 0.88,
+          "evidence": [{"text": "Hyperlipidemia, stable on current therapy", "startOffset": 0, "endOffset": 41}]
+        },
+        {
+          "name": "G44.209",
+          "system": "ICD10",
+          "description": "Tension-type headache, unspecified, not intractable",
+          "confidence": 0.85,
+          "evidence": [{"text": "Tension-type headache, chronic", "startOffset": 0, "endOffset": 30}]
+        },
+        {
+          "name": "99214",
+          "system": "CPT",
+          "description": "Office or other outpatient visit, established patient, moderate complexity",
+          "confidence": 0.90,
+          "evidence": [{"text": "established patient with moderate complexity", "startOffset": 0, "endOffset": 44}]
+        }
+      ]
+    },
+    "afterVisitSummary": {
+      "AfterVisitSummary": {
+        "SummarizedSegments": [
+          {"Text": "Today we discussed your ongoing headaches and blood pressure management."},
+          {"Text": "Your blood pressure was 142/90 mmHg today, which is higher than our target of less than 130/80 mmHg."},
+          {"Text": "We are increasing your lisinopril from 10mg to 20mg daily to help better control your blood pressure."},
+          {"Text": "We are also starting a new medication called amitriptyline 10mg, to be taken at bedtime, to help prevent your headaches."},
+          {"Text": "Please try to reduce your use of ibuprofen, as taking it too frequently can actually make headaches worse."},
+          {"Text": "Please continue monitoring your blood pressure at home and keep a log of your readings."},
+          {"Text": "Try to follow a low-sodium diet and get regular exercise, such as 30 minutes of walking most days."},
+          {"Text": "Please come back in 4 weeks so we can check how your blood pressure and headaches are responding to the new medications."},
+          {"Text": "Before your next visit, please get blood work done — we are ordering a basic metabolic panel and lipid panel."}
+        ]
+      }
+    },
+    "transcript": {
+      "Transcript": {
+        "TranscriptSegments": [
+          {"Content": "Good morning. How are you feeling today?", "ParticipantRole": "CLINICIAN", "BeginAudioTime": 0.0, "EndAudioTime": 2.5},
+          {"Content": "I've been having these headaches for about two weeks now.", "ParticipantRole": "PATIENT", "BeginAudioTime": 3.0, "EndAudioTime": 7.0},
+          {"Content": "Can you describe the headaches for me?", "ParticipantRole": "CLINICIAN", "BeginAudioTime": 7.5, "EndAudioTime": 10.0},
+          {"Content": "It's like a dull throbbing pain, mostly in the front of my head. Gets worse in the afternoon.", "ParticipantRole": "PATIENT", "BeginAudioTime": 10.5, "EndAudioTime": 15.0},
+          {"Content": "I've been checking my blood pressure at home and it's been running high, around 145 over 92.", "ParticipantRole": "PATIENT", "BeginAudioTime": 15.5, "EndAudioTime": 20.0},
+          {"Content": "Let me check your blood pressure now. It's 142 over 90. That is a bit elevated.", "ParticipantRole": "CLINICIAN", "BeginAudioTime": 25.0, "EndAudioTime": 30.0},
+          {"Content": "I'd like to increase your lisinopril to 20 milligrams and start you on amitriptyline for the headaches.", "ParticipantRole": "CLINICIAN", "BeginAudioTime": 45.0, "EndAudioTime": 50.0},
+          {"Content": "Please come back in four weeks so we can see how you're doing.", "ParticipantRole": "CLINICIAN", "BeginAudioTime": 55.0, "EndAudioTime": 58.0}
+        ]
+      }
+    }
+  }
+}

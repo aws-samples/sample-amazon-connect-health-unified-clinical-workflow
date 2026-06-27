@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: No-Show Patients Action Group
+  version: 1.0.0
+  description: List patients who missed scheduled appointments.
+paths:
+  /no-show-patients:
+    post:
+      summary: List patients who no-showed recently
+      description: >-
+        Returns patients who had a scheduled appointment in the last
+        lookback_days days but no matching Encounter resource was created.
+      operationId: getNoShowPatients
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lookback_days:
+                  type: integer
+                  default: 30
+                  minimum: 1
+                  maximum: 180
+      responses:
+        '200':
+          description: List of no-show patients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_count: {type: integer}
+                  patients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        patient_id: {type: string}
+                        name: {type: string}
+                        scheduled_date: {type: string, format: date}
+                        appointment_type: {type: string}
+                  disclaimer:
+                    type: string

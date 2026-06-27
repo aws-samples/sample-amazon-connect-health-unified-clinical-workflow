@@ -1,0 +1,99 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront distribution for frontend (private S3 bucket)'
+
+Parameters:
+  FrontendBucketName:
+    Type: String
+    Description: S3 bucket name for frontend static files
+
+Resources:
+  # S3 Bucket for frontend static files
+  FrontendBucket:  # checkov:skip=CKV_AWS_18: Access logging not required for a demo/POC  # checkov:skip=CKV_AWS_21: Versioning not required for a demo/POC
+    Type: AWS::S3::Bucket
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W35
+            reason: "Access logging not required for a demo/POC"
+    Properties:
+      BucketName: !Ref FrontendBucketName  # checkov:skip=CKV_AWS_21: Versioning not required for a demo/POC
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # Origin Access Control for CloudFront
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${FrontendBucketName}-oac'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # CloudFront Distribution
+  CloudFrontDistribution:  # checkov:skip=CKV_AWS_86: Access logging not required for a demo/POC  # checkov:skip=CKV_AWS_68: WAF not required for a demo/POC
+    Type: AWS::CloudFront::Distribution
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W70
+            reason: "TLSv1.2_2021 is set in ViewerCertificate"
+          - id: W10
+            reason: "CloudFront access logging not required for a demo/POC"
+          - id: W68
+            reason: "WAF not required for a demo/POC — add AWS managed WAF rules for production"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # checkov:skip=CKV_AWS_68: WAF not required for a demo/POC
+        DefaultRootObject: index.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !Sub '${FrontendBucketName}.s3.${AWS::Region}.amazonaws.com'
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # CachingOptimized
+          Compress: true
+        PriceClass: PriceClass_100
+        HttpVersion: http2
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+          MinimumProtocolVersion: TLSv1.2_2021
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipal
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub 'arn:aws:s3:::${FrontendBucketName}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
+
+Outputs:
+  CloudFrontURL:
+    Description: CloudFront URL for testing
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+  DistributionId:
+    Description: CloudFront Distribution ID (for cache invalidation)
+    Value: !Ref CloudFrontDistribution

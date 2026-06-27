@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: Diabetic Risk Action Group
+  version: 1.0.0
+  description: List patients at elevated risk for diabetic complications.
+paths:
+  /diabetic-risk:
+    post:
+      summary: Score and list high-risk diabetic patients
+      description: >-
+        Returns Type 2 diabetes patients scored on recent A1c, medication
+        adherence proxies, and identified care gaps. Higher scores indicate
+        higher complication risk.
+      operationId: getDiabeticRisk
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                top_n:
+                  type: integer
+                  description: Return top N patients by risk score
+                  default: 10
+                  minimum: 1
+                  maximum: 100
+                min_score:
+                  type: number
+                  description: Optional minimum risk score (0.0 to 1.0)
+                  default: 0.5
+      responses:
+        '200':
+          description: Risk-scored patient list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_count: {type: integer}
+                  patients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        patient_id: {type: string}
+                        name: {type: string}
+                        risk_score: {type: number, minimum: 0, maximum: 1}
+                        contributing_factors:
+                          type: array
+                          items: {type: string}
+                  disclaimer:
+                    type: string

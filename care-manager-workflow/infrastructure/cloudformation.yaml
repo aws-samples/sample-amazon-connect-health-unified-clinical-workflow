@@ -1,0 +1,555 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Care Manager workflow — Amazon Bedrock Agent with six action groups
+  that query AWS HealthLake to answer natural-language clinical questions.
+  Companion code for Blog Post 2 in the unified clinical workflow series.
+  Requires the provider-workflow stack (or equivalent) to have populated
+  HealthLake with FHIR data.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment tag and naming suffix
+
+  HealthLakeDatastoreId:
+    Type: String
+    Description: >-
+      AWS HealthLake datastore ID (no default — must be the same datastore
+      the provider workflow writes to). All action group Lambdas query this
+      datastore over the FHIR REST API.
+
+  BedrockFoundationModelId:
+    Type: String
+    Default: us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    Description: Bedrock foundation model the agent uses for reasoning + NL composition
+
+  BedrockGuardrailId:
+    Type: String
+    Default: ''
+    Description: >-
+      Bedrock Guardrail ID for Responsible AI controls. REQUIRED for any
+      deployment touching real PHI. Deploy shared/bedrock-guardrails/
+      healthcare-guardrail.yaml first to obtain this. Leave blank for
+      synthetic-data testing only.
+
+  BedrockGuardrailVersion:
+    Type: String
+    Default: 'DRAFT'
+    Description: Bedrock Guardrail version pin
+
+  AgentName:
+    Type: String
+    Default: care-intelligence-agent
+    Description: Name of the Bedrock Agent (must be unique within account+region)
+
+Conditions:
+  HasGuardrail: !Not [!Equals [!Ref BedrockGuardrailId, '']]
+
+Resources:
+
+  # ──────────────────────────────────────────────────────────────
+  # S3 bucket for action-group OpenAPI schemas
+  # ──────────────────────────────────────────────────────────────
+  ActionGroupSchemaBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'care-mgr-action-schemas-${AWS::AccountId}-${Environment}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # CloudWatch log group for action group Lambdas (one shared group;
+  # individual Lambdas use distinct log streams)
+  # ──────────────────────────────────────────────────────────────
+  ActionGroupLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/care-mgr-action-groups-${Environment}'
+      RetentionInDays: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # Lambda execution role — scoped to HealthLake read + CloudWatch logs
+  # ──────────────────────────────────────────────────────────────
+  ActionGroupLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'care-mgr-action-group-lambda-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: HealthLakeReadAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # FHIR-resource read operations scoped to the specific datastore
+              - Effect: Allow
+                Action:
+                  - healthlake:ReadResource
+                  - healthlake:SearchWithGet
+                  - healthlake:SearchWithPost
+                Resource: !Sub 'arn:aws:healthlake:${AWS::Region}:${AWS::AccountId}:datastore/fhir/${HealthLakeDatastoreId}/*'
+        - PolicyName: CloudWatchLogsWrite
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub '${ActionGroupLogGroup.Arn}:*'
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # Action group Lambda functions (6 total — one per action group)
+  # All Lambdas share a single deployment package; the function
+  # routes by handler entrypoint. The actual Python code lives in
+  # care-manager-workflow/bedrock-agent/lambdas/
+  # ──────────────────────────────────────────────────────────────
+  PatientSummaryFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'care-mgr-patient-summary-${Environment}'
+      Runtime: python3.11
+      Handler: patient_summary.handler
+      Role: !GetAtt ActionGroupLambdaRole.Arn
+      Code:
+        ZipFile: |
+          # Placeholder — replace with real code from
+          # care-manager-workflow/bedrock-agent/lambdas/patient_summary.py
+          def handler(event, context):
+              return {'statusCode': 501, 'body': 'Not yet implemented'}
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          HEALTHLAKE_DATASTORE_ID: !Ref HealthLakeDatastoreId
+      LoggingConfig:
+        LogGroup: !Ref ActionGroupLogGroup
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: ActionGroup
+          Value: patient_summary
+
+  RecentVisitFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'care-mgr-recent-visit-${Environment}'
+      Runtime: python3.11
+      Handler: recent_visit.handler
+      Role: !GetAtt ActionGroupLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {'statusCode': 501, 'body': 'Not yet implemented'}
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          HEALTHLAKE_DATASTORE_ID: !Ref HealthLakeDatastoreId
+      LoggingConfig:
+        LogGroup: !Ref ActionGroupLogGroup
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: ActionGroup
+          Value: recent_visit
+
+  A1cTrendFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'care-mgr-a1c-trend-${Environment}'
+      Runtime: python3.11
+      Handler: a1c_trend.handler
+      Role: !GetAtt ActionGroupLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {'statusCode': 501, 'body': 'Not yet implemented'}
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          HEALTHLAKE_DATASTORE_ID: !Ref HealthLakeDatastoreId
+      LoggingConfig:
+        LogGroup: !Ref ActionGroupLogGroup
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: ActionGroup
+          Value: a1c_trend
+
+  OverdueA1cFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'care-mgr-overdue-a1c-${Environment}'
+      Runtime: python3.11
+      Handler: overdue_a1c.handler
+      Role: !GetAtt ActionGroupLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {'statusCode': 501, 'body': 'Not yet implemented'}
+      Timeout: 60   # Population-scope query — longer timeout
+      MemorySize: 1024
+      Environment:
+        Variables:
+          HEALTHLAKE_DATASTORE_ID: !Ref HealthLakeDatastoreId
+      LoggingConfig:
+        LogGroup: !Ref ActionGroupLogGroup
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: ActionGroup
+          Value: overdue_a1c
+
+  NoShowPatientsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'care-mgr-no-show-patients-${Environment}'
+      Runtime: python3.11
+      Handler: no_show_patients.handler
+      Role: !GetAtt ActionGroupLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {'statusCode': 501, 'body': 'Not yet implemented'}
+      Timeout: 60
+      MemorySize: 1024
+      Environment:
+        Variables:
+          HEALTHLAKE_DATASTORE_ID: !Ref HealthLakeDatastoreId
+      LoggingConfig:
+        LogGroup: !Ref ActionGroupLogGroup
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: ActionGroup
+          Value: no_show_patients
+
+  DiabeticRiskFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'care-mgr-diabetic-risk-${Environment}'
+      Runtime: python3.11
+      Handler: diabetic_risk.handler
+      Role: !GetAtt ActionGroupLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {'statusCode': 501, 'body': 'Not yet implemented'}
+      Timeout: 60
+      MemorySize: 1024
+      Environment:
+        Variables:
+          HEALTHLAKE_DATASTORE_ID: !Ref HealthLakeDatastoreId
+      LoggingConfig:
+        LogGroup: !Ref ActionGroupLogGroup
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: ActionGroup
+          Value: diabetic_risk
+
+  # ──────────────────────────────────────────────────────────────
+  # Lambda permissions: allow Bedrock Agent to invoke each function
+  # ──────────────────────────────────────────────────────────────
+  PatientSummaryInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PatientSummaryFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt CareIntelligenceAgent.AgentArn
+
+  RecentVisitInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RecentVisitFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt CareIntelligenceAgent.AgentArn
+
+  A1cTrendInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref A1cTrendFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt CareIntelligenceAgent.AgentArn
+
+  OverdueA1cInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref OverdueA1cFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt CareIntelligenceAgent.AgentArn
+
+  NoShowPatientsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref NoShowPatientsFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt CareIntelligenceAgent.AgentArn
+
+  DiabeticRiskInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DiabeticRiskFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt CareIntelligenceAgent.AgentArn
+
+  # ──────────────────────────────────────────────────────────────
+  # Bedrock Agent service role
+  # ──────────────────────────────────────────────────────────────
+  BedrockAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'AmazonBedrockExecutionRoleForAgents_care-mgr-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+      Policies:
+        - PolicyName: BedrockModelInvocation
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/${BedrockFoundationModelId}'
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${BedrockFoundationModelId}'
+        - PolicyName: ActionGroupSchemaReadAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub '${ActionGroupSchemaBucket.Arn}/*'
+        - !If
+          - HasGuardrail
+          - PolicyName: BedrockGuardrailUsage
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - bedrock:ApplyGuardrail
+                  Resource: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/${BedrockGuardrailId}'
+          - !Ref AWS::NoValue
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # Bedrock Agent
+  # ──────────────────────────────────────────────────────────────
+  CareIntelligenceAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: !Sub '${AgentName}-${Environment}'
+      Description: >-
+        Care manager workflow agent. Reasons over natural-language clinical
+        questions, calls action group Lambdas that query AWS HealthLake,
+        composes responses with citation to the source FHIR data.
+      AgentResourceRoleArn: !GetAtt BedrockAgentRole.Arn
+      FoundationModel: !Ref BedrockFoundationModelId
+      Instruction: >-
+        You are a clinical decision-support assistant helping care managers at
+        a healthcare organization. You answer questions about patients by
+        invoking the appropriate action group function and synthesizing the
+        returned FHIR data into a natural-language response. ALWAYS preface
+        any clinical content in your responses with a brief reminder that
+        AI-generated content should be reviewed by a licensed healthcare
+        provider before clinical decisions. When unsure which action group
+        applies, ask the user to clarify rather than guessing.
+      IdleSessionTTLInSeconds: 600
+      GuardrailConfiguration: !If
+        - HasGuardrail
+        - GuardrailIdentifier: !Ref BedrockGuardrailId
+          GuardrailVersion: !Ref BedrockGuardrailVersion
+        - !Ref AWS::NoValue
+      AutoPrepare: true
+      ActionGroups:
+        - ActionGroupName: patient_summary
+          Description: >-
+            Generate narrative summary of one patient's status: conditions,
+            medications, recent labs, care gaps. Use for "summary" or
+            "overview" questions about a specific patient.
+          ActionGroupExecutor:
+            Lambda: !GetAtt PatientSummaryFunction.Arn
+          ApiSchema:
+            S3:
+              S3BucketName: !Ref ActionGroupSchemaBucket
+              S3ObjectKey: action-groups/patient_summary.yaml
+        - ActionGroupName: recent_visit
+          Description: >-
+            Retrieve a patient's most recent clinical visit by name, with the
+            SOAP note and encounter date. Use for "what did Patient X discuss
+            in their last visit" type questions.
+          ActionGroupExecutor:
+            Lambda: !GetAtt RecentVisitFunction.Arn
+          ApiSchema:
+            S3:
+              S3BucketName: !Ref ActionGroupSchemaBucket
+              S3ObjectKey: action-groups/recent_visit.yaml
+        - ActionGroupName: a1c_trend
+          Description: >-
+            Retrieve a specific patient's A1c trend over a time window with
+            dated readings + direction (improving/worsening/stable). Use for
+            A1c-history questions about one patient.
+          ActionGroupExecutor:
+            Lambda: !GetAtt A1cTrendFunction.Arn
+          ApiSchema:
+            S3:
+              S3BucketName: !Ref ActionGroupSchemaBucket
+              S3ObjectKey: action-groups/a1c_trend.yaml
+        - ActionGroupName: overdue_a1c
+          Description: >-
+            List Type 2 diabetes patients with no A1c reading in the last 6
+            months. Use for "overdue for A1c" or "who haven't I monitored"
+            questions across the panel.
+          ActionGroupExecutor:
+            Lambda: !GetAtt OverdueA1cFunction.Arn
+          ApiSchema:
+            S3:
+              S3BucketName: !Ref ActionGroupSchemaBucket
+              S3ObjectKey: action-groups/overdue_a1c.yaml
+        - ActionGroupName: no_show_patients
+          Description: >-
+            List patients who had a scheduled appointment in the last 30 days
+            but did not attend (no Encounter resource matching the scheduled
+            slot). Use when the user asks about no-shows or missed follow-ups.
+          ActionGroupExecutor:
+            Lambda: !GetAtt NoShowPatientsFunction.Arn
+          ApiSchema:
+            S3:
+              S3BucketName: !Ref ActionGroupSchemaBucket
+              S3ObjectKey: action-groups/no_show_patients.yaml
+        - ActionGroupName: diabetic_risk
+          Description: >-
+            Score and list patients at high risk for diabetic complications
+            (recent A1c + adherence signals + care gaps). Use for "high
+            risk" or "prioritize" questions on diabetic care.
+          ActionGroupExecutor:
+            Lambda: !GetAtt DiabeticRiskFunction.Arn
+          ApiSchema:
+            S3:
+              S3BucketName: !Ref ActionGroupSchemaBucket
+              S3ObjectKey: action-groups/diabetic_risk.yaml
+      Tags:
+        Project: amazon-connect-health-unified-clinical-workflow
+        Environment: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # Bedrock Agent Alias (production-pin)
+  # ──────────────────────────────────────────────────────────────
+  CareIntelligenceAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId: !Ref CareIntelligenceAgent
+      AgentAliasName: !Sub '${Environment}-alias'
+      Description: !Sub 'Care Intelligence agent alias for ${Environment} environment'
+      Tags:
+        Project: amazon-connect-health-unified-clinical-workflow
+        Environment: !Ref Environment
+
+Outputs:
+  AgentId:
+    Description: Bedrock Agent ID (use in BedrockAgent invoke calls)
+    Value: !Ref CareIntelligenceAgent
+    Export:
+      Name: !Sub '${AWS::StackName}-AgentId'
+
+  AgentAliasId:
+    Description: Bedrock Agent Alias ID
+    Value: !GetAtt CareIntelligenceAgentAlias.AgentAliasId
+    Export:
+      Name: !Sub '${AWS::StackName}-AgentAliasId'
+
+  AgentArn:
+    Description: Bedrock Agent ARN
+    Value: !GetAtt CareIntelligenceAgent.AgentArn
+    Export:
+      Name: !Sub '${AWS::StackName}-AgentArn'
+
+  SchemaBucketName:
+    Description: >-
+      S3 bucket where OpenAPI schemas for action groups are stored. Upload
+      schemas to s3://<bucket>/action-groups/ before calling PrepareAgent.
+    Value: !Ref ActionGroupSchemaBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-SchemaBucketName'
+
+  ActionGroupLambdaRoleArn:
+    Description: ARN of the shared Lambda execution role
+    Value: !GetAtt ActionGroupLambdaRole.Arn
+
+  DeploymentInstructions:
+    Description: Next steps after stack deploys
+    Value: !Sub |
+      1. Upload OpenAPI schemas to s3://${ActionGroupSchemaBucket}/action-groups/
+         (patient_summary.yaml, recent_visit.yaml, a1c_trend.yaml,
+          overdue_a1c.yaml, no_show_patients.yaml, diabetic_risk.yaml)
+      2. Update each Lambda's code from care-manager-workflow/bedrock-agent/lambdas/
+         using `aws lambda update-function-code` per function
+      3. After uploading schemas to S3, run for EACH action group:
+         aws bedrock-agent update-agent-action-group ... (forces schema re-read)
+         aws bedrock-agent prepare-agent --agent-id ${CareIntelligenceAgent}
+      4. Test with: aws bedrock-agent-runtime invoke-agent \
+           --agent-id ${CareIntelligenceAgent} \
+           --agent-alias-id ${CareIntelligenceAgentAlias.AgentAliasId} \
+           --session-id test-1 \
+           --input-text "What patients are overdue for an A1c?"

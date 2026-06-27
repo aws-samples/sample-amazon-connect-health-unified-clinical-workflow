@@ -1,0 +1,550 @@
+{
+  "PatientSummaries": [
+    {
+      "PatientSummary": {
+        "JobId": "162064ba-f8d3-43c4-9459-24264725aa9b",
+        "SummaryType": "Pre-visit",
+        "PatientId": "0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a",
+        "GeneratedAt": "2026-02-27T06:02:30.600263",
+        "Sections": [
+          {
+            "SectionName": "# PATIENT_AND_ENCOUNTER_OVERVIEW\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "## Overview\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Elena Rodriguez is a",
+                "Evidence": [
+                  "Patient/0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a"
+                ]
+              },
+              {
+                "Text": " 58-year-old",
+                "Evidence": [
+                  "Patient/0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a"
+                ]
+              },
+              {
+                "Text": " female presenting for",
+                "Evidence": [
+                  "Patient/0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a"
+                ]
+              },
+              {
+                "Text": " follow-up visit.",
+                "Evidence": []
+              },
+              {
+                "Text": " The\npatient's last visit was on 07/19/2025.\n",
+                "Evidence": [
+                  "Encounter/f798a15ebbdda88ee5a46ad9c24ba600269dbbaab8bba14873e42d739168601f"
+                ]
+              },
+              {
+                "Text": "## Chronic and Active Conditions\n",
+                "Evidence": []
+              },
+              {
+                "Text": "* Bilateral primary osteoarthritis of knee",
+                "Evidence": [
+                  "Condition/652f342b06fa61ce336830999f2211547526b0ebd7a0176dacc731f7db9e3453"
+                ]
+              },
+              {
+                "Text": "* Morbid obesity due to excess calories",
+                "Evidence": [
+                  "Condition/2fdd92141e71ddf433006fe7d4534d4eed251222c172d6017ed81cef353e706c"
+                ]
+              },
+              {
+                "Text": "* Obstructive sleep apnea",
+                "Evidence": [
+                  "Condition/7a8c3c9918316d14924672da7fe57b265a49c7a40f6c461ee4771eeeaae3927d"
+                ]
+              },
+              {
+                "Text": "* Hyperlipidemia, unspecified",
+                "Evidence": [
+                  "Condition/3ceb2b5a732e7ee58fadb69b60efe7c9378d9efde30c77157d8732019efaaff3"
+                ]
+              },
+              {
+                "Text": "* Essential hypertension",
+                "Evidence": [
+                  "Condition/6e3aa6784827dadc944f071783557481baa3ccb43b0a81a1750851764529f271"
+                ]
+              },
+              {
+                "Text": "* Arthropathic psoriasis, unspecified",
+                "Evidence": [
+                  "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5"
+                ]
+              },
+              {
+                "Text": "* Asymptomatic menopausal state\n",
+                "Evidence": [
+                  "Condition/f0f73eb2a7601030d8b81dfa63bce7b1c81cd48f1e2d1c5c3a04796579f2cbb3"
+                ]
+              },
+              {
+                "Text": "## Recent Care\n",
+                "Evidence": []
+              },
+              {
+                "Text": "The patient had an urgent care visit on 11/01/2025 for eye swelling.",
+                "Evidence": [
+                  "Encounter/fdbff772bb94810e2bd7bd2a2026f4fa9435abf6436437463b7ed27a7244d299"
+                ]
+              },
+              {
+                "Text": " She\nunderwent sleep study with CPAP on 01/14/2025, and",
+                "Evidence": [
+                  "Encounter/653f89a0a78a398a719f7e64d1307e17e280ec98cd88e1a1d1b5554d5edecfe2"
+                ]
+              },
+              {
+                "Text": " an initial sleep study on\n09/20/2024.\n",
+                "Evidence": [
+                  "Encounter/6e26e1d781f6ed20fd807b624a0ebca499947d40581e1b2a16291d4dbef4323e"
+                ]
+              },
+              {
+                "Text": "## Current Medications\n",
+                "Evidence": []
+              },
+              {
+                "Text": "* Erythromycin 5 mg/gram ophthalmic ointment",
+                "Evidence": [
+                  "MedicationRequest/67b9a99140bf4c7994c8d9b139a637c7e06974be6722b3b5150509da8e715a58"
+                ]
+              },
+              {
+                "Text": "* Atorvastatin 10 mg oral tablet",
+                "Evidence": [
+                  "DocumentReference/36a5d409d5e91757ba82c9df2f9d18dd0720e850b1634706b7a823fafb155704"
+                ]
+              },
+              {
+                "Text": "* Clobetasol 0.05% cream topically twice daily",
+                "Evidence": [
+                  "DocumentReference/36a5d409d5e91757ba82c9df2f9d18dd0720e850b1634706b7a823fafb155704"
+                ]
+              },
+              {
+                "Text": "* Fluoxetine 40 mg oral capsule 60 mg once daily",
+                "Evidence": [
+                  "DocumentReference/36a5d409d5e91757ba82c9df2f9d18dd0720e850b1634706b7a823fafb155704"
+                ]
+              },
+              {
+                "Text": "* Fluticasone propionate 50 mcg nasal spray one spray each nostril daily",
+                "Evidence": [
+                  "DocumentReference/36a5d409d5e91757ba82c9df2f9d18dd0720e850b1634706b7a823fafb155704"
+                ]
+              },
+              {
+                "Text": "* Hydrocodone-acetaminophen 7.5-325 mg oral tablet three times daily",
+                "Evidence": [
+                  "DocumentReference/36a5d409d5e91757ba82c9df2f9d18dd0720e850b1634706b7a823fafb155704"
+                ]
+              },
+              {
+                "Text": "* Omeprazole 40 mg oral capsule",
+                "Evidence": [
+                  "DocumentReference/36a5d409d5e91757ba82c9df2f9d18dd0720e850b1634706b7a823fafb155704"
+                ]
+              },
+              {
+                "Text": "* Prednisone 10 mg oral tablet 5 mg total",
+                "Evidence": [
+                  "DocumentReference/36a5d409d5e91757ba82c9df2f9d18dd0720e850b1634706b7a823fafb155704"
+                ]
+              },
+              {
+                "Text": "* CPAP 8 cmH2O with heated humidification\n",
+                "Evidence": [
+                  "DocumentReference/f86a1cfd6cb816b509f746eaa304bee013613893a773b0a4a8348117810ea3d8"
+                ]
+              },
+              {
+                "Text": "## Recent Results\n",
+                "Evidence": []
+              },
+              {
+                "Text": "* On 11/01/2025: Blood pressure 145/94 and",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp"
+                ]
+              },
+              {
+                "Text": " weight 299.8 lbs",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight"
+                ]
+              },
+              {
+                "Text": "* On 07/19/2025: Hemoglobin 15.4 g/dL,",
+                "Evidence": [
+                  "Observation/dd9b2ebc89d64e38f5893a2ef7eb5e5a6e43623f7dd8f0d1eff6549a55a75f74"
+                ]
+              },
+              {
+                "Text": " hematocrit 47.4%,",
+                "Evidence": [
+                  "Observation/d50d29671f5a9b35a381149507fff2e3cda096319848e0241390ae29f64b1f8e"
+                ]
+              },
+              {
+                "Text": " glucose 120 mg/dL,",
+                "Evidence": [
+                  "Observation/f44193320f75225cc23253862b496a5601b3366df457d4d0a58bb93341d5b3fa"
+                ]
+              },
+              {
+                "Text": "\ncreatinine 0.84 mg/dL,",
+                "Evidence": [
+                  "Observation/747ac1a85f8d05c262ce1017d5d0f93521d86fed5c76575e08c64326e59031a6"
+                ]
+              },
+              {
+                "Text": " estimated GFR 82 mL/min/BSA,",
+                "Evidence": [
+                  "Observation/c67fb86f393bb86ad6bdddb08cbbfe3f669158e379f23a62740bcaf5de7ec869"
+                ]
+              },
+              {
+                "Text": " ALT 25 U/L,",
+                "Evidence": [
+                  "Observation/b389c92d4bf35d0b1a6caf691637f40911ef18e6d5c8669c352bdc484228c4f4"
+                ]
+              },
+              {
+                "Text": " AST 20 U/L,",
+                "Evidence": [
+                  "Observation/2347aa1c018a51e3226e12ae58320b5aedfa0f7fd25b1c31b2475850793b3b64"
+                ]
+              },
+              {
+                "Text": "\nchloride 112 mmol/L, and",
+                "Evidence": [
+                  "Observation/e8ae2e172782f3686f75ba082e3305af17317f03fd5b2525427209a30ebba432"
+                ]
+              },
+              {
+                "Text": " CO2 total 19 mmol/L",
+                "Evidence": [
+                  "Observation/65e197a009d00d4d0795c4a1dda7d12a1a28c3915df3913146e8b123559a0a41"
+                ]
+              },
+              {
+                "Text": "* On 10/11/2024: Cholesterol 174 mg/dL,",
+                "Evidence": [
+                  "Observation/1a7adc752049b02494f070d9fbb5962a057a219aed4707e2be596dbda11e39c3"
+                ]
+              },
+              {
+                "Text": " LDL calculated 90 mg/dL,",
+                "Evidence": [
+                  "Observation/4b2970170c4843bbad3cca15495f331b1c6416f4a7b1e8598b3287812199794d"
+                ]
+              },
+              {
+                "Text": " HDL cholesterol\n53 mg/dL,",
+                "Evidence": [
+                  "Observation/9866b9886ece2cc60d84aeb41b0d504f8a8db3471bcb6e68c09914d1b7e36768"
+                ]
+              },
+              {
+                "Text": " triglycerides 185 mg/dL,",
+                "Evidence": [
+                  "Observation/caf9453308393129fe8c735a0ebbe7f71ef87c822be19a957da525d0170613aa"
+                ]
+              },
+              {
+                "Text": " TSH 1.373 uIU/mL, and",
+                "Evidence": [
+                  "Observation/10430ec23f16ebe28f9798a329f5476c3419e07bacd6753e90a3e30c9dfdf26f"
+                ]
+              },
+              {
+                "Text": " Vitamin D 25 total 33.3\nng/mL\n",
+                "Evidence": [
+                  "Observation/e039dbe3836624646b3b3b7c454e4af8d28150f5e7ad55e2a9441a78cacb34fe"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# SINCE_LAST_VISIT\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "Hyperlipidemia was diagnosed on 07/18/2025. On 07/19/2025, laboratory studies\nshowed",
+                "Evidence": [
+                  "Condition/3ceb2b5a732e7ee58fadb69b60efe7c9378d9efde30c77157d8732019efaaff3"
+                ]
+              },
+              {
+                "Text": " hemoglobin 15.4 g/dL,",
+                "Evidence": [
+                  "Observation/dd9b2ebc89d64e38f5893a2ef7eb5e5a6e43623f7dd8f0d1eff6549a55a75f74"
+                ]
+              },
+              {
+                "Text": " hematocrit 47.4%,",
+                "Evidence": [
+                  "Observation/d50d29671f5a9b35a381149507fff2e3cda096319848e0241390ae29f64b1f8e"
+                ]
+              },
+              {
+                "Text": " glucose 120 mg/dL,",
+                "Evidence": [
+                  "Observation/f44193320f75225cc23253862b496a5601b3366df457d4d0a58bb93341d5b3fa"
+                ]
+              },
+              {
+                "Text": " creatinine\n0.84 mg/dL,",
+                "Evidence": [
+                  "Observation/747ac1a85f8d05c262ce1017d5d0f93521d86fed5c76575e08c64326e59031a6"
+                ]
+              },
+              {
+                "Text": " estimated GFR 82 mL/min/BSA,",
+                "Evidence": [
+                  "Observation/c67fb86f393bb86ad6bdddb08cbbfe3f669158e379f23a62740bcaf5de7ec869"
+                ]
+              },
+              {
+                "Text": " ALT 25 U/L, and",
+                "Evidence": [
+                  "Observation/b389c92d4bf35d0b1a6caf691637f40911ef18e6d5c8669c352bdc484228c4f4"
+                ]
+              },
+              {
+                "Text": " AST 20 U/L.",
+                "Evidence": [
+                  "Observation/2347aa1c018a51e3226e12ae58320b5aedfa0f7fd25b1c31b2475850793b3b64"
+                ]
+              },
+              {
+                "Text": " The patient\nhad an unattended sleep study on 09/20/2024, and",
+                "Evidence": [
+                  "Encounter/6e26e1d781f6ed20fd807b624a0ebca499947d40581e1b2a16291d4dbef4323e"
+                ]
+              },
+              {
+                "Text": " obstructive sleep apnea was\ndiagnosed on 09/20/2024. On 10/11/2024, lipid panel showed",
+                "Evidence": [
+                  "Condition/7a8c3c9918316d14924672da7fe57b265a49c7a40f6c461ee4771eeeaae3927d"
+                ]
+              },
+              {
+                "Text": " cholesterol 174\nmg/dL,",
+                "Evidence": [
+                  "Observation/1a7adc752049b02494f070d9fbb5962a057a219aed4707e2be596dbda11e39c3"
+                ]
+              },
+              {
+                "Text": " LDL calculated 90 mg/dL,",
+                "Evidence": [
+                  "Observation/4b2970170c4843bbad3cca15495f331b1c6416f4a7b1e8598b3287812199794d"
+                ]
+              },
+              {
+                "Text": " HDL cholesterol 53 mg/dL, and",
+                "Evidence": [
+                  "Observation/9866b9886ece2cc60d84aeb41b0d504f8a8db3471bcb6e68c09914d1b7e36768"
+                ]
+              },
+              {
+                "Text": " triglycerides 185\nmg/dL, along with",
+                "Evidence": [
+                  "Observation/caf9453308393129fe8c735a0ebbe7f71ef87c822be19a957da525d0170613aa"
+                ]
+              },
+              {
+                "Text": " TSH 1.373 uIU/mL.",
+                "Evidence": [
+                  "Observation/10430ec23f16ebe28f9798a329f5476c3419e07bacd6753e90a3e30c9dfdf26f"
+                ]
+              },
+              {
+                "Text": " The patient had polysomnography with CPAP on\n01/14/2025, and",
+                "Evidence": [
+                  "Encounter/653f89a0a78a398a719f7e64d1307e17e280ec98cd88e1a1d1b5554d5edecfe2"
+                ]
+              },
+              {
+                "Text": " obstructive sleep apnea was diagnosed on 02/14/2025.",
+                "Evidence": [
+                  "Condition/7ac6dfffccd857f00ff35e14c780b3588648df6cb5931d321f371d915802e13e"
+                ]
+              },
+              {
+                "Text": " CPAP 8\ncmH2O was prescribed on 02/14/2025. On 11/01/2025,",
+                "Evidence": [
+                  "DocumentReference/f86a1cfd6cb816b509f746eaa304bee013613893a773b0a4a8348117810ea3d8"
+                ]
+              },
+              {
+                "Text": " the patient presented to\nurgent care for right lower eyelid swelling, and",
+                "Evidence": [
+                  "Encounter/fdbff772bb94810e2bd7bd2a2026f4fa9435abf6436437463b7ed27a7244d299"
+                ]
+              },
+              {
+                "Text": " was found to have a stye under\nthe right lower eyelid.",
+                "Evidence": [
+                  "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+                ]
+              },
+              {
+                "Text": " Essential hypertension was diagnosed on 11/01/2025, and",
+                "Evidence": [
+                  "Condition/6e3aa6784827dadc944f071783557481baa3ccb43b0a81a1750851764529f271"
+                ]
+              },
+              {
+                "Text": "\nhordeolum externum unspecified eye was diagnosed on 11/01/2025. On that visit,",
+                "Evidence": [
+                  "Condition/96e91f392441ad0d49b4a4a0eaca67aa9b5a9c26b6c6639eba38ec5c575289c8"
+                ]
+              },
+              {
+                "Text": "\nblood pressure was 145/94 and",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp"
+                ]
+              },
+              {
+                "Text": " weight was 299.8 lbs.",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight"
+                ]
+              },
+              {
+                "Text": " Erythromycin ophthalmic\nointment was prescribed on 11/01/2025.\n",
+                "Evidence": [
+                  "MedicationRequest/67b9a99140bf4c7994c8d9b139a637c7e06974be6722b3b5150509da8e715a58"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# TRENDS\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "* Blood pressure was 151/96 on 01/13/2024,",
+                "Evidence": [
+                  "Observation/619e635f387c4776bca98be9119820b41c2973ebbf72a956892b3699d118b029-bp"
+                ]
+              },
+              {
+                "Text": " 139/94 on 07/20/2024, and",
+                "Evidence": [
+                  "Observation/9c961a0bdf22b8343549872af207ce15bd59faf2bfd7cc55d925be17522f93c4-bp"
+                ]
+              },
+              {
+                "Text": " 145/94 on\n11/01/2025,",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp"
+                ]
+              },
+              {
+                "Text": " showing persistently elevated trend",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp",
+                  "Observation/619e635f387c4776bca98be9119820b41c2973ebbf72a956892b3699d118b029-bp",
+                  "Observation/9c961a0bdf22b8343549872af207ce15bd59faf2bfd7cc55d925be17522f93c4-bp"
+                ]
+              },
+              {
+                "Text": "* Weight was 297 lbs on 07/20/2024 and",
+                "Evidence": [
+                  "Observation/9c961a0bdf22b8343549872af207ce15bd59faf2bfd7cc55d925be17522f93c4-weight"
+                ]
+              },
+              {
+                "Text": " 299.8 lbs on 11/01/2025,",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight"
+                ]
+              },
+              {
+                "Text": " showing stable\ntrend",
+                "Evidence": [
+                  "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight",
+                  "Observation/9c961a0bdf22b8343549872af207ce15bd59faf2bfd7cc55d925be17522f93c4-weight"
+                ]
+              },
+              {
+                "Text": "* Triglycerides were 185 mg/dL on 10/11/2024,",
+                "Evidence": [
+                  "Observation/caf9453308393129fe8c735a0ebbe7f71ef87c822be19a957da525d0170613aa"
+                ]
+              },
+              {
+                "Text": " showing elevated trend above goal\n",
+                "Evidence": [
+                  "Observation/caf9453308393129fe8c735a0ebbe7f71ef87c822be19a957da525d0170613aa"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# CMS_HCC_CODING_ANALYSIS\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "Morbid Obesity\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Last assessed January 2025. Confirm if still present.\n",
+                "Evidence": [
+                  "Condition/2fdd92141e71ddf433006fe7d4534d4eed251222c172d6017ed81cef353e706c",
+                  "Condition/789a57266c68360bf5439f9f0120f82c66572786e0b85565d363655bf065d63f",
+                  "Condition/e898bc620e85c958209e0b9c874e67284dfb651f2987afef8991fbf21e0dfa3d",
+                  "Condition/eab56b96a366dd2844c37174a2e978c609d8f340bcf0501f92f3fa49c0cf389d"
+                ]
+              },
+              {
+                "Text": "Rheumatoid Arthritis\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Last assessed February 2026. Confirm if still present.\n",
+                "Evidence": [
+                  "Condition/052fad9877618776ba95eb70d9e4b03513ce992e229d64241274ffb276bfe2a8",
+                  "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5",
+                  "Condition/f51369669bc6cfabd5f4cc0f4f99df12c1330b670a7b32c32b0b1a09c504bd1f"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# HHS_HCC_CODING_ANALYSIS\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "Rheumatoid Arthritis\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Last assessed February 2026. Confirm if still present.\n",
+                "Evidence": [
+                  "Condition/052fad9877618776ba95eb70d9e4b03513ce992e229d64241274ffb276bfe2a8",
+                  "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5",
+                  "Condition/f51369669bc6cfabd5f4cc0f4f99df12c1330b670a7b32c32b0b1a09c504bd1f"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "TotalCount": 1,
+  "GeneratedAt": "2026-02-27T06:02:30.601100",
+  "HccIncluded": true
+}

@@ -1,0 +1,188 @@
+{
+  "success": true,
+  "patientStory": "[REF2]40-year-old[/REF2] [REF3]male presenting for[/REF3] follow-up of dental and oral maxillofacial conditions. He carries diagnoses of [REF5]periapical abscess without sinus[/REF5], [REF6]traumatic fracture of tooth[/REF6], and [REF7]dental caries[/REF7], all with onset dates in late October 2023. He was recently prescribed [REF11]amoxicillin-clavulanate 875 mg twice daily[/REF11] and [REF12]chlorhexidine gluconate 0.12% solution 15 mL oromucosal twice daily[/REF12] on 10/27/2023 for management of his acute infectious process.\n\n[REF26]On 11/01/2023, he presented for follow-up after incision and drainage of left maxillary buccal vestibular abscess performed on 10/27/2023.[/REF26] [REF27]Facial swelling had resolved, though[/REF27] [REF28]continued pain in the left upper quadrant of the mouth persisted.[/REF28] [REF20]Panoramic imaging revealed[/REF20] [REF21]a large mandibular radiolucent lesion (19x13 mm) to the right mandible[/REF21], [REF22]tooth #31 with large distal caries and associated periapical radiolucency[/REF22], [REF23]root tips #12, 13 with periapical radiolucency[/REF23], [REF24]root tips #15 with periapical radiolucency[/REF24], and [REF25]tooth #16 with mesial decay[/REF25]. [REF31]Extraction of root tips #12, 13, 15 and tooth #31 was performed[/REF31], and [REF32]the Penrose drain was removed.[/REF32] [REF35]Follow-up was scheduled for one week later.[/REF35]",
+  "sinceLastVisit": [
+    {
+      "header": "[REF9]Oral and Maxillofacial Surgery Follow-up Visit[/REF9] ([REF26]11/01/2023[/REF26])",
+      "items": [
+        "[REF13]Blood pressure 115/85 (normal)[/REF13]",
+        "[REF14]Heart rate 80 (normal)[/REF14]",
+        "[REF15]Respiratory rate 17 (normal)[/REF15]",
+        "[REF16]Temperature 36\u00b0C (normal)[/REF16]",
+        "[REF17]SpO2 99% (normal)[/REF17]",
+        "[REF18]Weight 72.6 kg (160 lb)[/REF18]",
+        "[REF19]Height 5'11\" (1.803 m)[/REF19]",
+        "[REF27]Facial swelling had resolved[/REF27]",
+        "[REF28]Continued pain in the left upper quadrant of the mouth persisted[/REF28]",
+        "[REF29]Patient was eating soft foods and[/REF29] [REF30]remained on Augmentin[/REF30]",
+        "[REF20]Panoramic imaging[/REF20] [REF20]revealed[/REF20] [REF21]large mandibular radiolucent lesion (19x13 mm) to right mandible[/REF21], [REF22]tooth #31 with large distal caries and associated periapical radiolucency[/REF22], [REF23]root tips #12, 13 with periapical radiolucency[/REF23], [REF24]root tips #15 with periapical radiolucency[/REF24], and [REF25]tooth #16 with mesial decay[/REF25]",
+        "[REF31]Extraction of root tips #12, 13, 15 and tooth #31 was performed[/REF31]",
+        "[REF32]Penrose drain was removed[/REF32]",
+        "[REF33]Patient tolerated the extraction procedure well[/REF33]",
+        "[REF34]Post-operative instructions were provided[/REF34]",
+        "[REF35]Follow-up was scheduled for one week later[/REF35]"
+      ],
+      "_summary": "[REF26]Follow-up after incision and drainage of left maxillary buccal vestibular abscess performed on 10/27/2023.[/REF26]"
+    },
+    {
+      "header": "[REF36]Telephone Encounter (11/06/2023)[/REF36]",
+      "items": [
+        "[REF37]Patient's voicemail box had not been set up[/REF37]"
+      ],
+      "_summary": "[REF36]Documented the need for the one-week follow-up appointment from 11/01/2023.[/REF36]"
+    }
+  ],
+  "visitPriorities": {
+    "mustAddress": [
+      {
+        "title": "Large Mandibular Radiolucent Lesion",
+        "description": "19x13 mm lesion to right mandible identified on 11/01/2023 imaging",
+        "severity": "high"
+      },
+      {
+        "title": "Tooth #16 with Mesial Decay",
+        "description": "Identified on 11/01/2023; requires management plan",
+        "severity": "high"
+      },
+      {
+        "title": "Post-Extraction Follow-up",
+        "description": "Assessment of healing after extractions performed on 11/01/2023",
+        "severity": "high"
+      }
+    ],
+    "outstanding": [
+      {
+        "title": "One-Week Follow-up Appointment",
+        "description": "Scheduled from 11/01/2023 visit; telephone contact attempted 11/06/2023",
+        "severity": "moderate"
+      }
+    ]
+  },
+  "evidenceMap": {
+    "REF1": [
+      "Patient/46383dd73c1d282831d3e7c9101d4901497c32345d4e2fcc657c2eaf9d03830d"
+    ],
+    "REF2": [
+      "Patient/46383dd73c1d282831d3e7c9101d4901497c32345d4e2fcc657c2eaf9d03830d"
+    ],
+    "REF3": [
+      "Patient/46383dd73c1d282831d3e7c9101d4901497c32345d4e2fcc657c2eaf9d03830d"
+    ],
+    "REF4": [
+      "Encounter/0a94874d44adaaa652f7d65a2ef274916b239256b35eddc534985c6d26f56c9d"
+    ],
+    "REF5": [
+      "Condition/0906c33a1d7ffde35c07d3059aaffbb18f774ab0c49cb2e7662fd6f10a0cff9b",
+      "Condition/0f3e338f4b6a47aeb1ff5007a52339252377d7da5c8e8502b5c94228e2c4c975"
+    ],
+    "REF6": [
+      "Condition/192ca5c7c74c343cc35ad4e988766b072bf835f07e19cd26e954e2d63c9b26f5"
+    ],
+    "REF7": [
+      "Condition/a830cde9a2a34f7b8b9fc73ddeecd6187191206ce3d79b2aaa8f0018ae94fefa",
+      "Condition/c2eb6e7649fed4e7c7fe9715e942182a2245a943822fb9e135549e44b09764ea"
+    ],
+    "REF8": [
+      "Condition/e009c9fdaee83e028f9f832258c6db902646f0b461d962409fbceb4e75c15ddf"
+    ],
+    "REF9": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF10": [
+      "Procedure/4ef7bd6d6e1e3c539526575992bc996427519903f358b489bd4cf188f90d0e4f"
+    ],
+    "REF11": [
+      "MedicationRequest/f453299ded8c62e5f38ef0541932b19757b0bd7a49af21b7296b0edf56ef3ae2"
+    ],
+    "REF12": [
+      "MedicationRequest/0647cface17de59986a5fd20801de6186691461445ba307eb67c7d6ea9847c09"
+    ],
+    "REF13": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF14": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF15": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF16": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF17": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF18": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF19": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF20": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF21": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF22": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF23": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF24": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF25": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF26": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF27": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF28": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF29": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF30": [
+      "DocumentReference/9f14cbab467ce09f112bcd434000466903a3cbe6f23fecb355cab4f9f6e84398"
+    ],
+    "REF31": [
+      "DocumentReference/a5cb3edbfdf5d39e446d4f69fe2e997d52d9232b1626e7d334581cb2237c1843"
+    ],
+    "REF32": [
+      "DocumentReference/a5cb3edbfdf5d39e446d4f69fe2e997d52d9232b1626e7d334581cb2237c1843"
+    ],
+    "REF33": [
+      "DocumentReference/a5cb3edbfdf5d39e446d4f69fe2e997d52d9232b1626e7d334581cb2237c1843"
+    ],
+    "REF34": [
+      "DocumentReference/a5cb3edbfdf5d39e446d4f69fe2e997d52d9232b1626e7d334581cb2237c1843"
+    ],
+    "REF35": [
+      "DocumentReference/a5cb3edbfdf5d39e446d4f69fe2e997d52d9232b1626e7d334581cb2237c1843"
+    ],
+    "REF36": [
+      "DocumentReference/22abd95d65ce540718ac87e7e621480f66447910b978987f22076d24bb91256d"
+    ],
+    "REF37": [
+      "DocumentReference/22abd95d65ce540718ac87e7e621480f66447910b978987f22076d24bb91256d"
+    ]
+  },
+  "raw": "PATIENT STORY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n[REF2]40-year-old[/REF2] [REF3]male presenting for[/REF3] follow-up of dental and oral maxillofacial conditions. He carries diagnoses of [REF5]periapical abscess without sinus[/REF5], [REF6]traumatic fracture of tooth[/REF6], and [REF7]dental caries[/REF7], all with onset dates in late October 2023. He was recently prescribed [REF11]amoxicillin-clavulanate 875 mg twice daily[/REF11] and [REF12]chlorhexidine gluconate 0.12% solution 15 mL oromucosal twice daily[/REF12] on 10/27/2023 for management of his acute infectious process.\n\n[REF26]On 11/01/2023, he presented for follow-up after incision and drainage of left maxillary buccal vestibular abscess performed on 10/27/2023.[/REF26] [REF27]Facial swelling had resolved, though[/REF27] [REF28]continued pain in the left upper quadrant of the mouth persisted.[/REF28] [REF20]Panoramic imaging revealed[/REF20] [REF21]a large mandibular radiolucent lesion (19x13 mm) to the right mandible[/REF21], [REF22]tooth #31 with large distal caries and associated periapical radiolucency[/REF22], [REF23]root tips #12, 13 with periapical radiolucency[/REF23], [REF24]root tips #15 with periapical radiolucency[/REF24], and [REF25]tooth #16 with mesial decay[/REF25]. [REF31]Extraction of root tips #12, 13, 15 and tooth #31 was performed[/REF31], and [REF32]the Penrose drain was removed.[/REF32] [REF35]Follow-up was scheduled for one week later.[/REF35]\n\nSINCE LAST VISIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n[REF9]Oral and Maxillofacial Surgery Follow-up Visit[/REF9] ([REF26]11/01/2023[/REF26]):\n[REF26]Follow-up after incision and drainage of left maxillary buccal vestibular abscess performed on 10/27/2023.[/REF26]\n\u00b7 [REF13]Blood pressure 115/85 (normal)[/REF13]\n\u00b7 [REF14]Heart rate 80 (normal)[/REF14]\n\u00b7 [REF15]Respiratory rate 17 (normal)[/REF15]\n\u00b7 [REF16]Temperature 36\u00b0C (normal)[/REF16]\n\u00b7 [REF17]SpO2 99% (normal)[/REF17]\n\u00b7 [REF18]Weight 72.6 kg (160 lb)[/REF18]\n\u00b7 [REF19]Height 5'11\" (1.803 m)[/REF19]\n\u00b7 [REF27]Facial swelling had resolved[/REF27]\n\u00b7 [REF28]Continued pain in the left upper quadrant of the mouth persisted[/REF28]\n\u00b7 [REF29]Patient was eating soft foods and[/REF29] [REF30]remained on Augmentin[/REF30]\n\u00b7 [REF20]Panoramic imaging[/REF20] [REF20]revealed[/REF20] [REF21]large mandibular radiolucent lesion (19x13 mm) to right mandible[/REF21], [REF22]tooth #31 with large distal caries and associated periapical radiolucency[/REF22], [REF23]root tips #12, 13 with periapical radiolucency[/REF23], [REF24]root tips #15 with periapical radiolucency[/REF24], and [REF25]tooth #16 with mesial decay[/REF25]\n\u00b7 [REF31]Extraction of root tips #12, 13, 15 and tooth #31 was performed[/REF31]\n\u00b7 [REF32]Penrose drain was removed[/REF32]\n\u00b7 [REF33]Patient tolerated the extraction procedure well[/REF33]\n\u00b7 [REF34]Post-operative instructions were provided[/REF34]\n\u00b7 [REF35]Follow-up was scheduled for one week later[/REF35]\n\n[REF36]Telephone Encounter (11/06/2023)[/REF36]:\n[REF36]Documented the need for the one-week follow-up appointment from 11/01/2023.[/REF36]\n\u00b7 [REF37]Patient's voicemail box had not been set up[/REF37]\n\nVISIT PRIORITIES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nTODAY'S VISIT \u2014 MUST ADDRESS\n\nLarge Mandibular Radiolucent Lesion\n19x13 mm lesion to right mandible identified on 11/01/2023 imaging\n\nTooth #16 with Mesial Decay\nIdentified on 11/01/2023; requires management plan\n\nPost-Extraction Follow-up\nAssessment of healing after extractions performed on 11/01/2023\n\nOUTSTANDING \u2014 CONFIRM STATUS\n\nOne-Week Follow-up Appointment\nScheduled from 11/01/2023 visit; telephone contact attempted 11/06/2023\n\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+  "model": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "usage": {
+    "input_tokens": 3822,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1425
+  }
+}

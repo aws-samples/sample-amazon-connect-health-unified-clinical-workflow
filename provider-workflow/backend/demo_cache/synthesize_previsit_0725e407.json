@@ -1,0 +1,269 @@
+{
+  "success": true,
+  "patientStory": "[REF2][REF3]58-year-old female presenting for follow-up[/REF3][/REF2]. She carries diagnoses of [REF4]bilateral primary osteoarthritis of the knee[/REF4], [REF5]morbid obesity due to excess calories[/REF5], [REF6]obstructive sleep apnea[/REF6], [REF7]arthropathic psoriasis[/REF7], [REF8]hyperlipidemia[/REF8], [REF9]essential hypertension[/REF9], and [REF10]hordeolum externum[/REF10]. She recently required [REF11]urgent care evaluation on 11/01/2025 for right lower eyelid swelling[/REF11], for which [REF14][REF46]erythromycin 5 mg/gram ophthalmic ointment was prescribed[/REF46][/REF14]. She takes [REF19]prednisone 10 mg 0.5 tablets[/REF19] and [REF13]clobetasol 0.05% cream topically twice daily[/REF13] for her psoriasis, and [REF17]hydrocodone-acetaminophen 7.5-325 mg three times daily[/REF17] for osteoarthritis pain. Her weight management includes [REF20]tirzepatide subcutaneous injection[/REF20].\n\nOn 07/18/2025, she presented for routine ambulatory care. [REF30]Hyperlipidemia was diagnosed[/REF30], and laboratory studies were ordered. [REF12]Atorvastatin 10 mg oral tablet[/REF12] was initiated for lipid management.",
+  "sinceLastVisit": [
+    {
+      "header": "Laboratory Results (07/19/2025)",
+      "items": [
+        "[REF31]Hemoglobin 15.4 g/dL[/REF31] (normal)",
+        "[REF32]RBC 5.56 x10^6/uL[/REF32] (normal)",
+        "[REF33]Hematocrit 47.4%[/REF33] (normal)",
+        "[REF34][REF55]Glucose 120 mg/dL[/REF55][/REF34] (abnormal)",
+        "[REF35]Creatinine 0.84 mg/dL[/REF35] (normal)",
+        "[REF36]Estimated GFR 82 mL/min/BSA[/REF36] (normal)",
+        "[REF37]ALT 25 U/L[/REF37] (normal)",
+        "[REF38]AST 20 U/L[/REF38] (normal)",
+        "[REF39]Chloride 112 mmol/L[/REF39] (abnormal)",
+        "[REF40]CO2 total 19 mmol/L[/REF40] (abnormal)"
+      ],
+      "_summary": "Laboratory studies were completed."
+    },
+    {
+      "header": "Urgent Care Visit (11/01/2025)",
+      "items": [
+        "[REF41]Essential hypertension[/REF41] and [REF42]hordeolum externum were diagnosed[/REF42]",
+        "[REF44][REF48]Blood pressure 145/94[/REF48][/REF44] (abnormal)",
+        "[REF45][REF51]Weight 299.8 lbs[/REF51][/REF45] (normal)",
+        "[REF46]Erythromycin ophthalmic ointment was prescribed[/REF46]"
+      ],
+      "_summary": "[REF43]Patient presented with right lower eyelid swelling[/REF43]."
+    }
+  ],
+  "visitPriorities": {
+    "mustAddress": [
+      {
+        "title": "[REF41][REF9]Essential Hypertension[/REF9][/REF41]",
+        "description": "[REF48]Blood pressure 145/94 on 11/01/2025[/REF48]; [REF49]showing stable trend[/REF49]",
+        "severity": "high"
+      },
+      {
+        "title": "[REF34][REF55]Glucose[/REF55][/REF34]",
+        "description": "[REF55]120 mg/dL on 07/19/2025[/REF55]; [REF56]showing worsening trend[/REF56]",
+        "severity": "high"
+      },
+      {
+        "title": "[REF40]CO2 Total[/REF40]",
+        "description": "[REF40]19 mmol/L on 07/19/2025[/REF40] (abnormal)",
+        "severity": "high"
+      },
+      {
+        "title": "[REF39]Chloride[/REF39]",
+        "description": "[REF39]112 mmol/L on 07/19/2025[/REF39] (abnormal)",
+        "severity": "high"
+      },
+      {
+        "title": "[REF5]Morbid Obesity[/REF5]",
+        "description": "[REF57]Last assessed January 2025; confirm if still present[/REF57]",
+        "severity": "high"
+      },
+      {
+        "title": "Rheumatoid Arthritis",
+        "description": "[REF58][REF59]Last assessed March 2026; confirm if still present[/REF59][/REF58]",
+        "severity": "high"
+      }
+    ],
+    "outstanding": []
+  },
+  "evidenceMap": {
+    "REF1": [
+      "Patient/0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a"
+    ],
+    "REF2": [
+      "Patient/0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a"
+    ],
+    "REF3": [
+      "Patient/0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a"
+    ],
+    "REF4": [
+      "Condition/652f342b06fa61ce336830999f2211547526b0ebd7a0176dacc731f7db9e3453"
+    ],
+    "REF5": [
+      "Condition/789a57266c68360bf5439f9f0120f82c66572786e0b85565d363655bf065d63f"
+    ],
+    "REF6": [
+      "Condition/7a8c3c9918316d14924672da7fe57b265a49c7a40f6c461ee4771eeeaae3927d"
+    ],
+    "REF7": [
+      "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5"
+    ],
+    "REF8": [
+      "Condition/3ceb2b5a732e7ee58fadb69b60efe7c9378d9efde30c77157d8732019efaaff3"
+    ],
+    "REF9": [
+      "Condition/6e3aa6784827dadc944f071783557481baa3ccb43b0a81a1750851764529f271"
+    ],
+    "REF10": [
+      "Condition/96e91f392441ad0d49b4a4a0eaca67aa9b5a9c26b6c6639eba38ec5c575289c8"
+    ],
+    "REF11": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF12": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF13": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF14": [
+      "MedicationRequest/67b9a99140bf4c7994c8d9b139a637c7e06974be6722b3b5150509da8e715a58"
+    ],
+    "REF15": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF16": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF17": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF18": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF19": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF20": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF21": [
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp"
+    ],
+    "REF22": [
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight"
+    ],
+    "REF23": [
+      "Observation/dd9b2ebc89d64e38f5893a2ef7eb5e5a6e43623f7dd8f0d1eff6549a55a75f74"
+    ],
+    "REF24": [
+      "Observation/f44193320f75225cc23253862b496a5601b3366df457d4d0a58bb93341d5b3fa"
+    ],
+    "REF25": [
+      "Observation/747ac1a85f8d05c262ce1017d5d0f93521d86fed5c76575e08c64326e59031a6"
+    ],
+    "REF26": [
+      "Observation/b389c92d4bf35d0b1a6caf691637f40911ef18e6d5c8669c352bdc484228c4f4"
+    ],
+    "REF27": [
+      "Observation/2347aa1c018a51e3226e12ae58320b5aedfa0f7fd25b1c31b2475850793b3b64"
+    ],
+    "REF28": [
+      "Observation/e8ae2e172782f3686f75ba082e3305af17317f03fd5b2525427209a30ebba432"
+    ],
+    "REF29": [
+      "Observation/65e197a009d00d4d0795c4a1dda7d12a1a28c3915df3913146e8b123559a0a41"
+    ],
+    "REF30": [
+      "Condition/3ceb2b5a732e7ee58fadb69b60efe7c9378d9efde30c77157d8732019efaaff3"
+    ],
+    "REF31": [
+      "Observation/dd9b2ebc89d64e38f5893a2ef7eb5e5a6e43623f7dd8f0d1eff6549a55a75f74"
+    ],
+    "REF32": [
+      "Observation/5d67f6d9dae1dbefe5fc7f93ccfeb1c99d7df8817fb1b79b11abea0e85dc4259"
+    ],
+    "REF33": [
+      "Observation/d50d29671f5a9b35a381149507fff2e3cda096319848e0241390ae29f64b1f8e"
+    ],
+    "REF34": [
+      "Observation/f44193320f75225cc23253862b496a5601b3366df457d4d0a58bb93341d5b3fa"
+    ],
+    "REF35": [
+      "Observation/747ac1a85f8d05c262ce1017d5d0f93521d86fed5c76575e08c64326e59031a6"
+    ],
+    "REF36": [
+      "Observation/c67fb86f393bb86ad6bdddb08cbbfe3f669158e379f23a62740bcaf5de7ec869"
+    ],
+    "REF37": [
+      "Observation/b389c92d4bf35d0b1a6caf691637f40911ef18e6d5c8669c352bdc484228c4f4"
+    ],
+    "REF38": [
+      "Observation/2347aa1c018a51e3226e12ae58320b5aedfa0f7fd25b1c31b2475850793b3b64"
+    ],
+    "REF39": [
+      "Observation/e8ae2e172782f3686f75ba082e3305af17317f03fd5b2525427209a30ebba432"
+    ],
+    "REF40": [
+      "Observation/65e197a009d00d4d0795c4a1dda7d12a1a28c3915df3913146e8b123559a0a41"
+    ],
+    "REF41": [
+      "Condition/6e3aa6784827dadc944f071783557481baa3ccb43b0a81a1750851764529f271"
+    ],
+    "REF42": [
+      "Condition/96e91f392441ad0d49b4a4a0eaca67aa9b5a9c26b6c6639eba38ec5c575289c8"
+    ],
+    "REF43": [
+      "DocumentReference/177d285b73cd0724153512dd404c8c855a5c6ace098b7381c37001b1f574f8a7"
+    ],
+    "REF44": [
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp"
+    ],
+    "REF45": [
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight"
+    ],
+    "REF46": [
+      "MedicationRequest/67b9a99140bf4c7994c8d9b139a637c7e06974be6722b3b5150509da8e715a58"
+    ],
+    "REF47": [
+      "Observation/619e635f387c4776bca98be9119820b41c2973ebbf72a956892b3699d118b029-bp"
+    ],
+    "REF48": [
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp"
+    ],
+    "REF49": [
+      "Observation/619e635f387c4776bca98be9119820b41c2973ebbf72a956892b3699d118b029-bp",
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-bp"
+    ],
+    "REF50": [
+      "Observation/9c961a0bdf22b8343549872af207ce15bd59faf2bfd7cc55d925be17522f93c4-weight"
+    ],
+    "REF51": [
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight"
+    ],
+    "REF52": [
+      "Observation/9c961a0bdf22b8343549872af207ce15bd59faf2bfd7cc55d925be17522f93c4-weight",
+      "Observation/3e52415b3d43b6a30bea96addbeb90c9ffa702b1be926dd4d9243e7144ade4f8-weight"
+    ],
+    "REF53": [
+      "Observation/2b394900df359de7b650df6692c02dc9230ec2d3e89ef8b1a016b72ab7a5b21d"
+    ],
+    "REF54": [
+      "Observation/9bc019773ebee7fea77b6523c3c995f17c0a8da57089580e786c6df7906e1a47"
+    ],
+    "REF55": [
+      "Observation/f44193320f75225cc23253862b496a5601b3366df457d4d0a58bb93341d5b3fa"
+    ],
+    "REF56": [
+      "Observation/2b394900df359de7b650df6692c02dc9230ec2d3e89ef8b1a016b72ab7a5b21d",
+      "Observation/9bc019773ebee7fea77b6523c3c995f17c0a8da57089580e786c6df7906e1a47",
+      "Observation/f44193320f75225cc23253862b496a5601b3366df457d4d0a58bb93341d5b3fa"
+    ],
+    "REF57": [
+      "Condition/2fdd92141e71ddf433006fe7d4534d4eed251222c172d6017ed81cef353e706c",
+      "Condition/789a57266c68360bf5439f9f0120f82c66572786e0b85565d363655bf065d63f",
+      "Condition/e898bc620e85c958209e0b9c874e67284dfb651f2987afef8991fbf21e0dfa3d",
+      "Condition/eab56b96a366dd2844c37174a2e978c609d8f340bcf0501f92f3fa49c0cf389d"
+    ],
+    "REF58": [
+      "Condition/052fad9877618776ba95eb70d9e4b03513ce992e229d64241274ffb276bfe2a8",
+      "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5",
+      "Condition/f51369669bc6cfabd5f4cc0f4f99df12c1330b670a7b32c32b0b1a09c504bd1f"
+    ],
+    "REF59": [
+      "Condition/052fad9877618776ba95eb70d9e4b03513ce992e229d64241274ffb276bfe2a8",
+      "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5",
+      "Condition/f51369669bc6cfabd5f4cc0f4f99df12c1330b670a7b32c32b0b1a09c504bd1f"
+    ]
+  },
+  "raw": "PATIENT STORY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n[REF2][REF3]58-year-old female presenting for follow-up[/REF3][/REF2]. She carries diagnoses of [REF4]bilateral primary osteoarthritis of the knee[/REF4], [REF5]morbid obesity due to excess calories[/REF5], [REF6]obstructive sleep apnea[/REF6], [REF7]arthropathic psoriasis[/REF7], [REF8]hyperlipidemia[/REF8], [REF9]essential hypertension[/REF9], and [REF10]hordeolum externum[/REF10]. She recently required [REF11]urgent care evaluation on 11/01/2025 for right lower eyelid swelling[/REF11], for which [REF14][REF46]erythromycin 5 mg/gram ophthalmic ointment was prescribed[/REF46][/REF14]. She takes [REF19]prednisone 10 mg 0.5 tablets[/REF19] and [REF13]clobetasol 0.05% cream topically twice daily[/REF13] for her psoriasis, and [REF17]hydrocodone-acetaminophen 7.5-325 mg three times daily[/REF17] for osteoarthritis pain. Her weight management includes [REF20]tirzepatide subcutaneous injection[/REF20].\n\nOn 07/18/2025, she presented for routine ambulatory care. [REF30]Hyperlipidemia was diagnosed[/REF30], and laboratory studies were ordered. [REF12]Atorvastatin 10 mg oral tablet[/REF12] was initiated for lipid management.\n\nSINCE LAST VISIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nLaboratory Results (07/19/2025):\nLaboratory studies were completed.\n\u00b7 [REF31]Hemoglobin 15.4 g/dL[/REF31] (normal)\n\u00b7 [REF32]RBC 5.56 x10^6/uL[/REF32] (normal)\n\u00b7 [REF33]Hematocrit 47.4%[/REF33] (normal)\n\u00b7 [REF34][REF55]Glucose 120 mg/dL[/REF55][/REF34] (abnormal)\n\u00b7 [REF35]Creatinine 0.84 mg/dL[/REF35] (normal)\n\u00b7 [REF36]Estimated GFR 82 mL/min/BSA[/REF36] (normal)\n\u00b7 [REF37]ALT 25 U/L[/REF37] (normal)\n\u00b7 [REF38]AST 20 U/L[/REF38] (normal)\n\u00b7 [REF39]Chloride 112 mmol/L[/REF39] (abnormal)\n\u00b7 [REF40]CO2 total 19 mmol/L[/REF40] (abnormal)\n\nUrgent Care Visit (11/01/2025):\n[REF43]Patient presented with right lower eyelid swelling[/REF43].\n\u00b7 [REF41]Essential hypertension[/REF41] and [REF42]hordeolum externum were diagnosed[/REF42]\n\u00b7 [REF44][REF48]Blood pressure 145/94[/REF48][/REF44] (abnormal)\n\u00b7 [REF45][REF51]Weight 299.8 lbs[/REF51][/REF45] (normal)\n\u00b7 [REF46]Erythromycin ophthalmic ointment was prescribed[/REF46]\n\nVISIT PRIORITIES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nTODAY'S VISIT \u2014 MUST ADDRESS\n\n[REF41][REF9]Essential Hypertension[/REF9][/REF41]\n[REF48]Blood pressure 145/94 on 11/01/2025[/REF48]; [REF49]showing stable trend[/REF49]\n\n[REF34][REF55]Glucose[/REF55][/REF34]\n[REF55]120 mg/dL on 07/19/2025[/REF55]; [REF56]showing worsening trend[/REF56]\n\n[REF40]CO2 Total[/REF40]\n[REF40]19 mmol/L on 07/19/2025[/REF40] (abnormal)\n\n[REF39]Chloride[/REF39]\n[REF39]112 mmol/L on 07/19/2025[/REF39] (abnormal)\n\n[REF5]Morbid Obesity[/REF5] [CMS-HCC]\n[REF57]Last assessed January 2025; confirm if still present[/REF57]\n\nRheumatoid Arthritis [CMS-HCC / HHS-HCC]\n[REF58][REF59]Last assessed March 2026; confirm if still present[/REF59][/REF58]\n\nOUTSTANDING \u2014 CONFIRM STATUS\n\nNone identified.\n\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+  "model": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "usage": {
+    "input_tokens": 4421,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1337
+  }
+}

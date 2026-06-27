@@ -1,0 +1,52 @@
+openapi: 3.0.0
+info:
+  title: A1c Trend Action Group
+  version: 1.0.0
+  description: Retrieve hemoglobin A1c history for a specific patient.
+paths:
+  /a1c-trend:
+    post:
+      summary: Get patient's A1c trend over time
+      description: >-
+        Returns dated A1c readings for a named patient over the specified
+        time window with a directional summary.
+      operationId: getA1cTrend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_name]
+              properties:
+                patient_name:
+                  type: string
+                months_back:
+                  type: integer
+                  description: How many months of history to retrieve
+                  default: 12
+                  minimum: 1
+                  maximum: 60
+      responses:
+        '200':
+          description: A1c trend retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_id:
+                    type: string
+                  readings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: {type: string, format: date}
+                        value: {type: number, description: "A1c percentage"}
+                        unit: {type: string, default: "%"}
+                  direction:
+                    type: string
+                    enum: [improving, worsening, stable, insufficient_data]
+                  disclaimer:
+                    type: string

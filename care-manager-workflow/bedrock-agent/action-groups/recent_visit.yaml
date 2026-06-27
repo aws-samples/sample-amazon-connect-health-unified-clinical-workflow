@@ -1,0 +1,51 @@
+openapi: 3.0.0
+info:
+  title: Recent Visit Action Group
+  version: 1.0.0
+  description: Retrieve a patient's most recent clinical visit and SOAP note.
+paths:
+  /recent-visit:
+    post:
+      summary: Get patient's most recent visit
+      description: >-
+        Returns the most recent Encounter resource for a named patient, with
+        the linked DocumentReference (SOAP note) content.
+      operationId: getRecentVisit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_name]
+              properties:
+                patient_name:
+                  type: string
+                  description: Patient full name or partial name
+      responses:
+        '200':
+          description: Recent visit retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_id:
+                    type: string
+                  encounter_date:
+                    type: string
+                    format: date
+                  encounter_type:
+                    type: string
+                  soap_note:
+                    type: object
+                    properties:
+                      subjective: {type: string}
+                      objective: {type: string}
+                      assessment: {type: string}
+                      plan: {type: string}
+                  diagnoses:
+                    type: array
+                    items: {type: string}
+                  disclaimer:
+                    type: string

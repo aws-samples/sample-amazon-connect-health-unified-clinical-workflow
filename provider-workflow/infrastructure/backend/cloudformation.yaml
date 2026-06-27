@@ -1,0 +1,457 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Patient Insights Backend - ECS Fargate with ALB'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+  
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC to deploy into
+  
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnets for ECS tasks and ALB (at least 2 in different AZs)
+  
+  ECRRepositoryURI:
+    Type: String
+    Description: ECR Repository URI for backend image
+
+  HealthLakeDatastoreId:
+    Type: String
+    Description: HealthLake datastore ID (no default — must be provided)
+
+  ServiceEndpoint:
+    Type: String
+    Default: https://runtime.health-agent.us-east-1.api.aws
+    Description: Patient Insights service endpoint
+
+  DomainId:
+    Type: String
+    Description: Amazon Connect Health domain ID (e.g., dom-abc123def456)
+
+  CognitoUserPoolId:
+    Type: String
+    Default: ''
+    Description: Cognito User Pool ID for authentication (leave empty to disable auth)
+
+  CognitoClientId:
+    Type: String
+    Default: ''
+    Description: Cognito App Client ID for authentication (leave empty to disable auth)
+
+  S3OutputBucket:
+    Type: String
+    Default: ''
+    Description: S3 bucket name for output (leave empty to auto-create)
+
+  StreamingOutputBucket:
+    Type: String
+    Default: ''
+    Description: S3 bucket name for streaming output (leave empty to use same as S3OutputBucket)
+
+  CorsOrigin:
+    Type: String
+    Default: '*'
+    Description: CORS origin for the backend API (use a specific origin in production)
+
+  BedrockGuardrailId:
+    Type: String
+    Default: ''
+    Description: >-
+      Amazon Bedrock Guardrail ID for Responsible AI controls. REQUIRED for
+      any deployment touching real PHI. Deploy shared/bedrock-guardrails/
+      healthcare-guardrail.yaml first to obtain this value. Leave blank only
+      for synthetic-data testing.
+
+  BedrockGuardrailVersion:
+    Type: String
+    Default: 'DRAFT'
+    Description: Bedrock Guardrail version to pin to (use 'DRAFT' for dev, version number for prod)
+
+Conditions:
+  CreateOutputBucket: !Equals [!Ref S3OutputBucket, '']
+
+Mappings:
+  CloudFrontPrefixListMap:
+    us-east-1:
+      PrefixListId: pl-3b927c52
+    us-east-2:
+      PrefixListId: pl-b6a144df
+    us-west-1:
+      PrefixListId: pl-4ea04527
+    us-west-2:
+      PrefixListId: pl-82a045eb
+
+Resources:
+
+  # S3 Bucket for Patient Insights and streaming output (auto-created if not provided)
+  OutputBucket:  # checkov:skip=CKV_AWS_18: Access logging not required for a demo/POC  # checkov:skip=CKV_AWS_21: Versioning not required for a demo/POC
+    Type: AWS::S3::Bucket
+    Condition: CreateOutputBucket
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W35
+            reason: "Access logging not required for a demo/POC"
+    Properties:
+      BucketName: !Sub 'connect-health-output-${AWS::AccountId}-${Environment}'  # checkov:skip=CKV_AWS_21: Versioning not required for a demo/POC
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # Bucket policy — deny non-HTTPS access to output bucket
+  OutputBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: CreateOutputBucket
+    Properties:
+      Bucket: !Ref OutputBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyNonHTTPS
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt OutputBucket.Arn
+              - !Sub '${OutputBucket.Arn}/*'
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+
+  # ECS Cluster
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub 'patient-insights-backend-${Environment}'
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  # CloudWatch Log Group
+  LogGroup:
+    Type: AWS::Logs::LogGroup  # checkov:skip=CKV_AWS_158: KMS encryption not required for a demo/POC
+    DeletionPolicy: Delete  # Logs are short-lived; retention policy on the resource handles lifecycle
+    UpdateReplacePolicy: Delete
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W84
+            reason: "KMS encryption for CloudWatch logs not required for a demo/POC"
+    Properties:
+      LogGroupName: !Sub '/ecs/patient-insights-backend-${Environment}'
+      RetentionInDays: 7
+
+  # ECS Task Execution Role
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+    Properties:
+      RoleName: !Sub 'patient-insights-backend-execution-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # ECS Task Role (for application permissions)
+  TaskRole:
+    Type: AWS::IAM::Role  # checkov:skip=CKV_AWS_111: health-agent:* and bedrock:InvokeModel require Resource '*' — ARN formats not yet published for new service
+    Metadata:
+      cfn-lint:
+        config:
+          # W1031: Fn::Sub with Fn::If for S3 bucket selection — valid CFN,
+          # cfn-lint can't fully resolve the nested intrinsic. Real deploys
+          # resolve correctly.
+          ignore_checks:
+            - W1031
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W11
+            reason: "health-agent:* and bedrock:InvokeModel require Resource '*' — ARN formats not yet published for new service"
+    Properties:
+      RoleName: !Sub 'patient-insights-backend-task-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: PatientInsightsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # HealthLake access (scoped to specific datastore)
+              - Effect: Allow
+                Action:
+                  - healthlake:ReadResource
+                  - healthlake:SearchWithGet
+                  - healthlake:SearchWithPost
+                  - healthlake:SearchEverything
+                  - healthlake:GetCapabilities
+                Resource: !Sub 'arn:aws:healthlake:${AWS::Region}:${AWS::AccountId}:datastore/fhir/${HealthLakeDatastoreId}'
+              # HealthAgent (ConnectHealth) API access — scoped to specific actions
+              - Effect: Allow
+                Action:
+                  - health-agent:StartPatientInsightsJob
+                  - health-agent:GetPatientInsightsJob
+                  - health-agent:GenerateMedicalCodes
+                Resource: !Sub 'arn:aws:health-agent:${AWS::Region}:${AWS::AccountId}:domain/${DomainId}'
+              # S3 access for insights output and streaming output
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub
+                    - 'arn:aws:s3:::${Bucket}'
+                    - Bucket: !If [CreateOutputBucket, !Ref OutputBucket, !Ref S3OutputBucket]
+                  - !Sub
+                    - 'arn:aws:s3:::${Bucket}/*'
+                    - Bucket: !If [CreateOutputBucket, !Ref OutputBucket, !Ref S3OutputBucket]
+                  - !Sub
+                    - 'arn:aws:s3:::${Bucket}'
+                    - Bucket: !If [CreateOutputBucket, !Ref OutputBucket, !Ref StreamingOutputBucket]
+                  - !Sub
+                    - 'arn:aws:s3:::${Bucket}/*'
+                    - Bucket: !If [CreateOutputBucket, !Ref OutputBucket, !Ref StreamingOutputBucket]
+              # Bedrock access for narrative synthesis (scoped to specific model)
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource:
+                  - 'arn:aws:bedrock:*::foundation-model/us.anthropic.claude-sonnet-4-5-20250929-v1:0'
+                  - 'arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0'
+                  - !Sub 'arn:aws:bedrock:us-east-1:${AWS::AccountId}:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0'
+
+  # Security Group for ALB
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W5
+            reason: "ALB egress to 0.0.0.0/0 required to reach ECS tasks and perform health checks"
+          - id: W40
+            reason: "ALB egress uses -1 protocol to allow health check responses to ECS tasks"
+    Properties:
+      GroupName: !Sub 'patient-insights-backend-alb-${Environment}'
+      GroupDescription: Security group for Patient Insights Backend ALB
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        # Restrict to CloudFront only — no direct internet access to ALB
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourcePrefixListId: !FindInMap [CloudFrontPrefixListMap, !Ref "AWS::Region", PrefixListId]
+          Description: Allow HTTP from CloudFront managed prefix list only
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic (ALB to ECS and health checks)
+
+  # Security Group for ECS Tasks
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W5
+            reason: "ECS tasks require outbound internet access to reach AWS APIs (HealthLake, S3, Bedrock, ConnectHealth)"
+          - id: W40
+            reason: "ECS egress uses -1 protocol to allow all outbound traffic to AWS service endpoints"
+    Properties:
+      GroupName: !Sub 'patient-insights-backend-ecs-${Environment}'
+      GroupDescription: Security group for Patient Insights Backend ECS tasks
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5000
+          ToPort: 5000
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          Description: Allow inbound from ALB only
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic (AWS APIs, HealthLake, S3, Bedrock)
+
+  # Application Load Balancer
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer  # checkov:skip=CKV_AWS_91: ALB access logging not required for a demo/POC
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W28
+            reason: "Explicit name used for predictable cross-stack references and deployment commands"
+          - id: W52
+            reason: "ALB access logging not required for a demo/POC"
+    Properties:
+      Name: !Sub 'patient-insights-${Environment}'
+      Type: application
+      Scheme: internet-facing
+      Subnets: !Ref SubnetIds
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      LoadBalancerAttributes:
+        - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: 'true'
+
+  # ALB Target Group
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub 'patient-insights-tg-${Environment}'
+      Port: 5000
+      Protocol: HTTP  # checkov:skip=CKV_AWS_103: Target group HTTP intentional — CloudFront terminates TLS, ALB forwards HTTP internally
+      VpcId: !Ref VpcId
+      TargetType: ip
+      HealthCheckPath: /api/health
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+
+  # ALB Listener
+  ALBListener:  # checkov:skip=CKV_AWS_2: HTTP intentional — CloudFront terminates TLS  # checkov:skip=CKV_AWS_103: HTTP intentional — CloudFront terminates TLS
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W56
+            reason: "HTTP listener intentional — CloudFront terminates TLS and forwards HTTP to ALB"
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP  # checkov:skip=CKV_AWS_2: HTTP intentional — CloudFront terminates TLS  # checkov:skip=CKV_AWS_103: HTTP intentional — CloudFront terminates TLS
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  # ECS Task Definition
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub 'patient-insights-backend-${Environment}'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '256'
+      Memory: '512'
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: patient-insights-backend
+          Image: !Ref ECRRepositoryURI
+          Essential: true
+          PortMappings:
+            - ContainerPort: 5000
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: DOMAIN_ID
+              Value: !Ref DomainId
+            - Name: HEALTHLAKE_DATASTORE_ID
+              Value: !Ref HealthLakeDatastoreId
+            - Name: SERVICE_ENDPOINT
+              Value: !Ref ServiceEndpoint
+            - Name: S3_OUTPUT_BUCKET
+              Value: !Sub
+                - 's3://${Bucket}/insights-output/'
+                - Bucket: !If [CreateOutputBucket, !Ref OutputBucket, !Ref S3OutputBucket]
+            - Name: STREAMING_OUTPUT_BUCKET
+              Value: !If [CreateOutputBucket, !Ref OutputBucket, !Ref StreamingOutputBucket]
+            - Name: SERVER_PORT
+              Value: '5000'
+            - Name: SERVER_HOST
+              Value: '0.0.0.0'
+            - Name: DEBUG
+              Value: 'false'
+            - Name: COGNITO_USER_POOL_ID
+              Value: !Ref CognitoUserPoolId
+            - Name: COGNITO_CLIENT_ID
+              Value: !Ref CognitoClientId
+            - Name: CORS_ORIGINS
+              Value: !Ref CorsOrigin
+            - Name: BEDROCK_GUARDRAIL_ID
+              Value: !Ref BedrockGuardrailId
+            - Name: BEDROCK_GUARDRAIL_VERSION
+              Value: !Ref BedrockGuardrailVersion
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: backend
+
+  # ECS Service
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: ALBListener
+    Properties:
+      ServiceName: !Sub 'patient-insights-backend-${Environment}'
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref SubnetIds
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+      LoadBalancers:
+        - ContainerName: patient-insights-backend
+          ContainerPort: 5000
+          TargetGroupArn: !Ref TargetGroup
+
+Outputs:
+  ALBEndpoint:
+    Description: ALB DNS Name
+    Value: !GetAtt ALB.DNSName
+  
+  BackendURL:
+    Description: Backend API URL
+    Value: !Sub 'http://${ALB.DNSName}'
+  
+  ECSCluster:
+    Description: ECS Cluster Name
+    Value: !Ref ECSCluster
+  
+  ECSService:
+    Description: ECS Service Name
+    Value: !GetAtt ECSService.Name
+
+  OutputBucketName:
+    Description: S3 bucket for Patient Insights and streaming output
+    Value: !If [CreateOutputBucket, !Ref OutputBucket, !Ref S3OutputBucket]

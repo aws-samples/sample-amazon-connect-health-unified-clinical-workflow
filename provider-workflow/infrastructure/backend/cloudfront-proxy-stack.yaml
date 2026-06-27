@@ -1,0 +1,69 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront HTTPS proxy for Patient Insights Backend ALB'
+
+Parameters:
+  ALBDomainName:
+    Type: String
+    Default: ''
+    Description: ALB domain name to proxy (e.g., my-alb-123456.us-east-1.elb.amazonaws.com)
+
+Resources:
+  CloudFrontDistribution:  # checkov:skip=CKV_AWS_86: Access logging not required for a demo/POC  # checkov:skip=CKV_AWS_68: WAF not required for a demo/POC
+    Type: AWS::CloudFront::Distribution
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W70
+            reason: "TLSv1.2_2021 is set in ViewerCertificate"
+          - id: W10
+            reason: "CloudFront access logging not required for a demo/POC"
+          - id: W68
+            reason: "WAF not required for a demo/POC — add AWS managed WAF rules for production"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # checkov:skip=CKV_AWS_68: WAF not required for a demo/POC
+        Comment: 'HTTPS proxy for Patient Insights Backend'
+        DefaultCacheBehavior:
+          TargetOriginId: BackendALB
+          ViewerProtocolPolicy: https-only
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - PUT
+            - POST
+            - PATCH
+            - DELETE
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # CachingDisabled
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3  # AllViewer
+          Compress: true
+        Origins:
+          - Id: BackendALB
+            DomainName: !Ref ALBDomainName
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+              OriginSSLProtocols:
+                - TLSv1.2
+              OriginReadTimeout: 60
+        PriceClass: PriceClass_100
+        HttpVersion: http2
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+          MinimumProtocolVersion: TLSv1.2_2021
+
+Outputs:
+  BackendURL:
+    Description: HTTPS Backend URL
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+  
+  DistributionId:
+    Description: CloudFront Distribution ID
+    Value: !Ref CloudFrontDistribution

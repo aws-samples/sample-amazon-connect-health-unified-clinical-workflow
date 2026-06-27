@@ -1,0 +1,7 @@
+# Bedrock Agent action group Lambda runtime dependencies.
+#
+# Note: boto3 and botocore are provided by the Lambda runtime and do not
+# need to be in the deployment package. We list them here only for local
+# development clarity.
+boto3>=1.34.0
+botocore>=1.34.0

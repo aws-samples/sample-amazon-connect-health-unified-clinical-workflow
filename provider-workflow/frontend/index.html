@@ -1,0 +1,1716 @@
+<!-- Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved. -->
+<!-- SPDX-License-Identifier: MIT-0 -->
+<!-- nosemgrep: insecure-document-method, html-in-template-string — innerHTML assignments render trusted AWS API data and static UI strings; user values are escapeHtml()-wrapped -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBAR Format</title>
+    <!-- SBAR Format - Updated 2026-02-04 -->
+    <!-- Refactored: Modular Structure - 2026-02-05 -->
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <!-- Amazon Connect Streams API for CCP integration -->
+    <script src="https://unpkg.com/amazon-connect-streams@2.18.5/release/connect-streams.js"></script>
+    
+    
+    <!-- Early script to define openPatient function for inline onclick handlers -->
+    <script>
+        // Define openPatient function early so inline onclick handlers can access it
+        window.openPatient = function(patientId) {
+            console.log('openPatient called with:', patientId);
+            
+            // Hide the schedule screen
+            const scheduleScreen = document.getElementById('scheduleScreen');
+            if (scheduleScreen) {
+                scheduleScreen.classList.add('hidden');
+            }
+            
+            // Show the patient portal background
+            const patientPortal = document.querySelector('.patient-portal-background');
+            if (patientPortal) {
+                patientPortal.style.display = 'block';
+            }
+            
+            // Show the iframe container
+            const previsitContainer = document.getElementById('previsitContainer');
+            if (previsitContainer) {
+                previsitContainer.classList.add('active');
+            }
+            
+            // Show the full-width headers
+            const headers = document.querySelector('.full-width-headers');
+            if (headers) {
+                headers.style.display = 'block';
+            }
+            
+            // For now, only Jane Smith opens the actual patient portal
+            // Other patients would load their respective data
+            if (patientId === 'jane-smith') {
+                // Load Jane Smith's data
+            } else {
+                // In a real app, you would load the patient's data here
+            }
+        };
+        
+        // Go back to schedule screen
+        window.goBackToSchedule = function() {
+            console.log('Going back to schedule');
+            
+            // Show the schedule screen
+            const scheduleScreen = document.getElementById('scheduleScreen');
+            if (scheduleScreen) {
+                scheduleScreen.classList.remove('hidden');
+            }
+            
+            // Hide the patient portal background
+            const patientPortal = document.querySelector('.patient-portal-background');
+            if (patientPortal) {
+                patientPortal.style.display = 'none';
+            }
+            
+            // Hide the iframe container
+            const previsitContainer = document.getElementById('previsitContainer');
+            if (previsitContainer) {
+                previsitContainer.classList.remove('active');
+            }
+            
+            // Hide the full-width headers
+            const headers = document.querySelector('.full-width-headers');
+            if (headers) {
+                headers.style.display = 'none';
+            }
+        };
+    </script>
+</head>
+<body>
+    <style>body { padding-left: 0px; box-sizing: border-box; } /* CCP sidebar removed — no offset needed */</style>
+    <!-- ==========================================================================
+         PATIENT SCHEDULE SCREEN
+         ========================================================================== -->
+    <div class="schedule-screen" id="scheduleScreen">
+        <!-- Top Bar -->
+        <div class="schedule-top-bar">
+            <div class="schedule-top-left">
+                <div class="schedule-logo">Amazon Connect Health Solutions</div>
+            </div>
+            <div class="schedule-top-right">
+                <button class="schedule-icon-btn" title="Messages">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span class="schedule-notification-badge">3</span>
+                </button>
+                <button class="schedule-icon-btn" title="Calendar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                </button>
+                <button class="schedule-icon-btn" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+                    </svg>
+                </button>
+                <div class="schedule-doctor-info">
+                    <div class="schedule-doctor-avatar">NP</div>
+                    <div class="schedule-doctor-name">Dr. Neil Patel</div>
+                </div>
+                <button id="logoutBtn" class="schedule-icon-btn" title="Sign out" onclick="if(window.CognitoAuth && CognitoAuth.isEnabled()) CognitoAuth.logout();" style="display:none; margin-left: 8px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Schedule Header -->
+        <div class="schedule-header">
+            <div class="schedule-title-row">
+                <div class="schedule-title">Today's Schedule</div>
+                <div class="schedule-date-nav">
+                    <button class="schedule-nav-btn" title="Previous Day">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    <button class="schedule-today-btn">Today</button>
+                    <button class="schedule-nav-btn" title="Next Day">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="schedule-subtitle">
+                <div class="schedule-date">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span id="scheduleDate">Loading...</span>
+                </div>
+                <div class="schedule-stats">
+                    <span>2 patients scheduled</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="schedule-container">
+            <!-- Patients will be loaded dynamically from HealthLake -->
+            <div class="loading-patients" style="padding: 20px; text-align: center; color: #6b7280;">
+                Loading patients from HealthLake...
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         FULL WIDTH HEADERS
+         ========================================================================== -->
+    <div class="full-width-headers">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <div class="top-nav-left">
+                <div class="logo">
+                    <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+                    <span>Patient Portal</span>
+                </div>
+                <span>Patient Lists</span>
+                
+                <span>Care Pathways</span>
+            </div>
+            <div class="top-nav-right">
+                <div class="user-dropdown">
+                    <span class="user-name">Dr. Neil Patel</span>
+                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </div>
+                <a href="#" class="nav-item">Settings</a>
+                <a href="#" class="nav-item">Help</a>
+            </div>
+        </div>
+
+        <!-- Main Header -->
+        <div class="main-header">
+            <div class="patient-info">
+                <button class="back-btn" onclick="goBackToSchedule()" title="Back to Schedule">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div class="patient-avatar" id="headerPatientAvatar">
+                    --
+                </div>
+                <div class="patient-details">
+                    <strong id="headerPatientName">Select a patient</strong>
+                    <span style="color: #d1d5db;">•</span>
+                    <span class="patient-mrn" id="headerPatientMRN">MRN: --</span>
+                    <span style="color: #d1d5db;">•</span>
+                    <span class="patient-demographics" id="headerPatientDemo">-- • --</span>
+                    <span style="color: #d1d5db;">•</span>
+                    <span class="patient-status-badge">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Active
+                    </span>
+                    <span class="patient-status-badge allergies">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Allergies
+                    </span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="sync-timestamp">
+                    <button class="refresh-btn-header" onclick="refreshHeaderData()" title="Refresh data">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23,4 23,10 17,10"></polyline>
+                            <polyline points="1,20 1,14 7,14"></polyline>
+                            <path d="M20.49,9A9,9,0,0,0,5.64,5.64L1,10m22,4L18.36,18.36A9,9,0,0,1,3.51,15"></path>
+                        </svg>
+                    </button>
+                    <div class="sync-dot"></div>
+                    <span id="headerSyncTime">3:25 PM</span>
+                </div>
+                <button class="start-consultation-btn" onclick="startConsultation()" title="Start AI Consultation">
+                    <svg class="consultation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M8 9h8"/>
+                        <path d="M8 13h6"/>
+                    </svg>
+                    <span class="button-text">Start Consultation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Size 2 Consultation Overlay - Positioned in Patient Portal -->
+    <div class="consultation-overlay-size2" id="consultationOverlaySize2">
+        <div class="scribe-interface">
+            <div class="scribe-info">
+                <div class="scribe-title">Connect Health</div>
+                <div class="recording-timer" id="recordingTimerSize2">00:00</div>
+                <div class="recording-indicator">
+                    <div class="recording-dot"></div>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn flag-btn" onclick="flagMoment()" title="Flag a Moment (Spacebar)" data-flag-count="0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                        <line x1="4" y1="22" x2="4" y2="15"/>
+                    </svg>
+                </button>
+                <button class="control-btn pause-btn" onclick="pauseConsultation(event)" title="Pause Recording">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"/>
+                        <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                </button>
+                <button class="control-btn stop-btn" onclick="showStopConsultationConfirmation()" title="Stop Recording">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+                <button class="control-btn maximize-btn" onclick="expandToSize1()" title="Maximize">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         PATIENT PORTAL BACKGROUND (70% WIDTH)
+         ========================================================================== -->
+    <div class="patient-portal-background" style="display: none;">
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <a href="#" class="tab active" id="tabProfile">Profile</a>
+            <a href="#" class="tab" id="tabMedHistory">Medical history</a>
+            <a href="#" class="tab" id="tabClinicalNotes">Clinical notes</a>
+            <a href="#" class="tab">Lab results</a>
+            <a href="#" class="tab">Reports</a>
+            <a href="#" class="tab">Admin</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <ul class="sidebar-nav">
+                    <li><a href="#" class="active"><span class="sidebar-icon"><svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span></a></li>
+                    <li><a href="#"><span class="sidebar-icon"><svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></span></a></li>
+                    <li><a href="#"><span class="sidebar-icon"><svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></span></a></li>
+                    <li><a href="#"><span class="sidebar-icon"><svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span></a></li>
+                    <li><a href="#"><span class="sidebar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg></span></a></li>
+                </ul>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Left Panel -->
+                <div class="left-panel">
+                    <!-- Diagnoses -->
+                    <div class="section">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Diagnoses</div>
+                        <div class="section-content">
+                            <div class="section-subheader">Chronic diagnoses</div>
+                            <div class="diagnosis-item">(Z79.4) Hypertension</div>
+                            <div class="diagnosis-item">(Z50.00) Diabetes</div>
+                            <div class="diagnosis-item">(J43.9) Asthma</div>
+                            <div class="diagnosis-item">(Z50.00) Diabetes</div>
+                            <div class="diagnosis-item">(J40.1) Hypertension</div>
+                            <div class="diagnosis-item">(Z50.00) Diabetes</div>
+                            <div class="diagnosis-item">(Z79.4) Hypertension</div>
+                            
+                            <div class="section-subheader">Acute diagnoses</div>
+                            <div class="section-note">No active Acute diagnoses</div>
+                        </div>
+                    </div>
+
+                    <!-- Social History -->
+                    <div class="section">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Social history</div>
+                        <div class="section-content">
+                            <div class="section-subheader">Smoking status</div>
+                            <div class="section-detail">📝 Former smoker &nbsp;&nbsp; 04/28/2014</div>
+                        </div>
+                    </div>
+
+                    <!-- Past Medical History -->
+                    <div class="section">
+                        <div class="section-header"><svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Past medical history</div>
+                        <div class="section-content">
+                            <div class="section-subheader">Surgical history</div>
+                            <div class="section-detail">• Appendectomy (2015)</div>
+                            <div class="section-detail">• Cholecystectomy (2018)</div>
+                            <div class="section-subheader">Hospitalizations</div>
+                            <div class="section-detail">• Pneumonia (2019) — 3 days</div>
+                            <div class="section-subheader">Family history</div>
+                            <div class="section-detail">• Mother: Type 2 Diabetes, Hypertension</div>
+                            <div class="section-detail">• Father: Coronary artery disease</div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Lab Results -->
+                    <div class="section">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M7 2v2H6c-.55 0-1 .45-1 1v16c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V5c0-.55-.45-1-1-1h-1V2h-2v2H9V2H7zm12 17H5V8h14v11z"/></svg> Recent lab results</div>
+                        <div class="section-content">
+                            <div class="section-subheader">Last drawn: 01/15/2026</div>
+                            <div class="section-detail">• CBC: WNL</div>
+                            <div class="section-detail">• BMP: Glucose 118 mg/dL (borderline)</div>
+                            <div class="section-detail">• Lipid Panel: LDL 128 mg/dL, HDL 52 mg/dL</div>
+                            <div class="section-detail">• TSH: 2.1 mIU/L (normal)</div>
+                            <div class="section-detail">• Creatinine: 0.9 mg/dL (normal)</div>
+                        </div>
+                    </div>
+
+                    <!-- Vital Signs -->
+                    <div class="section">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg> Vital signs (Last: 01/20/2026)</div>
+                        <div class="section-content">
+                            <div class="section-detail">• BP: 132/84 mmHg</div>
+                            <div class="section-detail">• HR: 74 bpm</div>
+                            <div class="section-detail">• Temp: 98.6°F</div>
+                            <div class="section-detail">• SpO2: 98%</div>
+                            <div class="section-detail">• Weight: 165 lbs (BMI: 27.4)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel -->
+                <div class="right-panel">
+                    <!-- Allergies Section -->
+                    <div class="section" style="background: white; border-radius: 8px; margin-bottom: 16px;">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> Allergies</div>
+                        <div class="section-content">
+                            <div class="section-subheader">Drug allergies</div>
+                            <div class="allergy-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Penicillins <span class="allergy-severity severity-mild">Very mild</span> Dizziness/Lightheadedness
+                            </div>
+                            
+                            <div class="section-subheader">Food allergies</div>
+                            <div class="allergy-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Onion <span class="allergy-severity severity-mild">Very mild</span> Rash - localized Childhood
+                            </div>
+                            
+                            <div class="section-subheader">Environmental allergies</div>
+                            <div class="allergy-item">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Bee venom <span class="allergy-severity severity-moderate">Moderate</span> Difficulty speaking or swallowing Adulthood
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medications Section -->
+                    <div class="section" style="background: white; border-radius: 8px; margin-bottom: 16px;">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/></svg> Medications</div>
+                        <div class="section-content">
+                            <div class="medication-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Aripiprazole (Abilify) 10 MG Oral Tablet</div>
+                            <div class="medication-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Atorvastatin Calcium (Lipitor) 10 MG Oral Tablet</div>
+                            <div class="medication-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Ibuprofen (Advil) 200 MG Oral Tablet</div>
+                            <div class="medication-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Ibuprofen 100 MG/5ML Oral Suspension</div>
+                            <div class="medication-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Lisinopril 10 MG Oral Tablet</div>
+                            <div class="medication-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;"><path d="M3.5 11.5C3.5 8.46 5.96 6 9 6h6c3.04 0 5.5 2.46 5.5 5.5v1c0 3.04-2.46 5.5-5.5 5.5H9c-3.04 0-5.5-2.46-5.5-5.5v-1zm5.5-3.5c-1.93 0-3.5 1.57-3.5 3.5v1c0 1.93 1.57 3.5 3.5 3.5h6c1.93 0 3.5-1.57 3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5H9z"/><path d="M12 8v8"/></svg> Pseudoephedrine/Ibuprofen (Ibuprofen Cold & Sinus) 30-200 MG Oral Tablet</div>
+                            <div class="section-note">Show historical (2)</div>
+                        </div>
+                    </div>
+
+                    <!-- Immunizations Section -->
+                    <div class="section" style="background: white; border-radius: 8px; margin-bottom: 16px;">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg> Immunizations</div>
+                        <div class="section-content">
+                            <div class="section-detail">• Influenza (Flu) — 10/15/2025</div>
+                            <div class="section-detail">• COVID-19 Booster (Pfizer) — 09/22/2025</div>
+                            <div class="section-detail">• Tdap — 03/10/2022</div>
+                            <div class="section-detail">• Pneumococcal (PCV20) — 01/18/2024</div>
+                            <div class="section-detail">• Shingrix (Dose 2) — 06/05/2023</div>
+                        </div>
+                    </div>
+
+                    <!-- Care Team Section -->
+                    <div class="section" style="background: white; border-radius: 8px; margin-bottom: 16px;">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Care Team</div>
+                        <div class="section-content">
+                            <div class="section-detail">• <strong>PCP:</strong> Dr. Neil Patel, MD — Internal Medicine</div>
+                            <div class="section-detail">• <strong>Cardiology:</strong> Dr. Sarah Chen, MD</div>
+                            <div class="section-detail">• <strong>Pharmacy:</strong> CVS Pharmacy — (555) 010-0101</div>
+                        </div>
+                    </div>
+
+                    <!-- Insurance Section -->
+                    <div class="section" style="background: white; border-radius: 8px; margin-bottom: 16px;">
+                        <div class="section-header"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg> Insurance</div>
+                        <div class="section-content">
+                            <div class="section-detail">• <strong>Primary:</strong> Blue Cross Blue Shield PPO</div>
+                            <div class="section-detail">• <strong>Member ID:</strong> XYZ123456789</div>
+                            <div class="section-detail">• <strong>Group:</strong> 98765 — Effective 01/01/2025</div>
+                            <div class="section-detail">• <strong>Copay:</strong> $25 Office / $50 Specialist</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         POPOUT BACKDROP - Darkens background when iframe is popped out
+         ========================================================================== -->
+    <div class="popout-backdrop" id="popoutBackdrop"></div>
+
+    <!-- ==========================================================================
+         ELLIS · PRE-VISIT AI ASSISTANT IFRAME OVERLAY (30% WIDTH)
+         ========================================================================== -->
+    <div class="previsit-overlay" id="previsitContainer">
+        <div class="previsit-header" id="previsitHeader">
+            <div class="previsit-title">
+                <span id="previsitTitleText" style="font-weight: 600; color: #1e293b;">Pre-visit Patient Insights</span>
+            </div>
+            <div class="previsit-controls">
+                <button class="google-icon-btn popout-btn" id="popoutBtn" title="Pop out">
+                    <!-- Pop out icon -->
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </button>
+                <button class="google-icon-btn toggle-btn" id="toggleBtn" title="Minimize">
+                    <!-- Minimize icon: corners pointing inward (matches AWS Scribe) -->
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="previsit-iframe-container">
+            <iframe 
+                id="previsitIframe"
+                class="previsit-iframe" 
+                src="previsit-iframe.html?v=20260303a" 
+                title="Dashboard"
+                loading="lazy">
+                <p>Your browser does not support iframes. Please <a href="previsit-iframe.html">click here</a> to view the demo directly.</p>
+            </iframe>
+        </div>
+        
+        <div class="resize-handle" id="resizeHandle"></div>
+    </div>
+
+    <!-- ==========================================================================
+         CHAT OVERLAY
+         ========================================================================== -->
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="ai-avatar">
+                        <!-- Removed pulsating dot -->
+                    </div>
+                    <div class="chat-title">Ellis AI Assistant</div>
+                </div>
+                <button class="chat-close" onclick="toggleChat()">×</button>
+            </div>
+            <div class="chat-messages">
+                <div class="message ai-message">
+                    <div class="message-content">
+                        Hello! I'm Ellis, your Pre-Visit AI Assistant. I can help you analyze this patient's data, answer questions about their care plan, or discuss treatment options. What would you like to know?
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" placeholder="Ask about this patient's care..." />
+                <button class="chat-send">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         SCRIBE OVERLAY - CLEAN & MINIMAL
+         ========================================================================== -->
+    <!-- Darkening Backdrop -->
+    <div class="consultation-backdrop" id="consultationBackdrop"></div>
+    
+    <div class="consultation-overlay" id="consultationOverlay">
+        <!-- Minimize Button - Top Right Corner -->
+        <button class="overlay-minimize-btn" onclick="minimizeConsultationOverlay()" title="Minimize">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+            </svg>
+        </button>
+        
+        <!-- Main Scribe Interface -->
+        <div class="scribe-interface">
+            <!-- Header -->
+            <div class="scribe-header">
+                <div class="scribe-title">Amazon Connect Health</div>
+                <div class="scribe-subtitle">Listening and analyzing your consultation</div>
+            </div>
+
+            <!-- Sleek Floating 3D Sound Wave -->
+            <div class="soundwave-container">
+                <svg class="wave-svg" viewBox="-20 -10 440 120">
+                    <defs>
+                        <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.9" />
+                            <stop offset="30%" style="stop-color:#1d4ed8;stop-opacity:1" />
+                            <stop offset="70%" style="stop-color:#2563eb;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.8" />
+                        </linearGradient>
+                        <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.8" />
+                            <stop offset="30%" style="stop-color:#059669;stop-opacity:1" />
+                            <stop offset="70%" style="stop-color:#047857;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.7" />
+                        </linearGradient>
+                        <linearGradient id="waveGradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.7" />
+                            <stop offset="30%" style="stop-color:#7c3aed;stop-opacity:0.9" />
+                            <stop offset="70%" style="stop-color:#6d28d9;stop-opacity:0.9" />
+                            <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.6" />
+                        </linearGradient>
+                        <linearGradient id="waveGradient4" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:0.5" />
+                            <stop offset="30%" style="stop-color:#d97706;stop-opacity:0.7" />
+                            <stop offset="70%" style="stop-color:#b45309;stop-opacity:0.7" />
+                            <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:0.4" />
+                        </linearGradient>
+                    </defs>
+                    <path class="wave-path wave-path-1" d="M20,50 Q120,30 220,50 T420,50" />
+                    <path class="wave-path wave-path-2" d="M20,50 Q120,65 220,40 T420,50" />
+                    <path class="wave-path wave-path-3" d="M20,50 Q120,40 220,65 T420,50" />
+                    <path class="wave-path wave-path-4" d="M20,50 Q120,55 220,35 T420,50" />
+                </svg>
+            </div>
+
+            <!-- Recording Status -->
+            <div class="recording-status">
+                <div class="status-indicator">
+                    <div class="recording-dot"></div>
+                    <div class="status-text">Listening</div>
+                </div>
+                <div class="recording-timer" id="scribeTimer">00:00</div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="scribe-controls">
+                <button class="scribe-control-btn pause" onclick="pauseConsultation()" id="pauseScribeBtnSize1" title="Pause Recording">
+                    <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"/>
+                        <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                    <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+                        <polygon points="5,3 19,12 5,21"/>
+                    </svg>
+                    <span class="scribe-btn-label pause-label">Pause</span>
+                    <span class="scribe-btn-label resume-label" style="display:none;">Resume</span>
+                </button>
+                <button class="scribe-control-btn stop" onclick="showStopConsultationConfirmation()" title="Stop Recording">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="5"/>
+                    </svg>
+                    <span class="scribe-btn-label">Stop</span>
+                </button>
+            </div>
+
+            <!-- Toggle Icons Row -->
+            <div class="scribe-toggle-row">
+                <button class="scribe-toggle-btn" onclick="flagMoment()" title="Flag a Moment (Spacebar)" data-flag-count="0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                        <line x1="4" y1="22" x2="4" y2="15"/>
+                    </svg>
+                </button>
+                <button class="scribe-toggle-btn" id="toggleTranscriptBtn" onclick="toggleScribeTranscript()" title="Toggle Live Transcription">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </button>
+                <button class="scribe-toggle-btn" id="togglePrioritiesBtn" onclick="toggleScribePriorities()" title="Toggle Visit Priorities">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                        <path d="M9 14l2 2 4-4"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Keyboard Shortcut Hint -->
+            <div class="keyboard-hint">
+                <kbd>Space</kbd> to flag a moment
+            </div>
+        </div>
+    </div>
+
+    <!-- Scribe Sidebar Panels (outside overlay for proper positioning) -->
+    <div class="scribe-sidebar" id="scribeSidebar">
+        <!-- Live Transcription Panel -->
+        <div class="scribe-sidebar-panel" id="transcriptPanel" style="display:none;">
+            <div class="sidebar-panel-header">
+                <div class="sidebar-panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    </svg>
+                    Live Transcription
+                </div>
+                <button class="sidebar-panel-close" onclick="toggleScribeTranscript()">×</button>
+            </div>
+            <div class="sidebar-panel-body" id="transcriptContent">
+                <div class="transcript-placeholder">Waiting for speech...</div>
+            </div>
+        </div>
+
+        <!-- Visit Priorities Panel -->
+        <div class="scribe-sidebar-panel" id="prioritiesPanel" style="display:none;">
+            <div class="sidebar-panel-header">
+                <div class="sidebar-panel-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                    </svg>
+                    Visit Priorities
+                </div>
+                <button class="sidebar-panel-close" onclick="toggleScribePriorities()">×</button>
+            </div>
+            <div class="sidebar-panel-body" id="prioritiesContent">
+                <div class="transcript-placeholder">Loading priorities...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         JAVASCRIPT
+         ========================================================================== -->
+    <!-- Back to Patient List Confirmation -->
+    <div class="stop-confirmation-overlay" id="backToPatientListConfirmation">
+        <div class="stop-confirmation-modal">
+            <div class="stop-confirmation-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 11H3v2h6m-4-4l-2 2 2 2"/>
+                    <path d="M20 4v10a2 2 0 01-2 2H6"/>
+                </svg>
+            </div>
+            <div class="stop-confirmation-content">
+                <h3>Save to Drafts?</h3>
+                <p>Your clinical notes will be saved as a draft. You can finish this documentation later.</p>
+            </div>
+            <div class="stop-confirmation-actions">
+                <button class="stop-confirmation-btn cancel-stop" onclick="hideBackToPatientListConfirmation()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Keep Editing
+                </button>
+                <button class="stop-confirmation-btn confirm-stop" onclick="confirmBackToPatientList()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Save & Exit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stop Recording Confirmation - Subtle & Cohesive -->
+    <div class="stop-confirmation-overlay" id="stopConfirmationOverlay">
+        <div class="stop-confirmation-modal">
+            <div class="stop-confirmation-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+            </div>
+            <div class="stop-confirmation-content">
+                <h3>End Listening?</h3>
+                <p>The AI will analyze your consultation and generate structured clinical notes for your review and approval.</p>
+            </div>
+            <div class="stop-confirmation-actions">
+                <button class="stop-confirmation-btn cancel-stop" onclick="hideStopConsultationConfirmation()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                    Keep Listening
+                </button>
+                <button class="stop-confirmation-btn confirm-stop" onclick="confirmStopConsultation()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Finish & Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-modal">
+            <div class="processing-spinner">
+                <div class="spinner-ring"></div>
+            </div>
+            <div class="processing-title">Processing Recording</div>
+            <div class="processing-subtitle">Please wait while we prepare your clinical notes</div>
+            <div class="processing-steps">
+                <div class="processing-step" id="step1">
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <div class="step-text">Processing recording to extract notes</div>
+                </div>
+                <div class="processing-step" id="step2">
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <div class="step-text">Cross-checking with patient data</div>
+                </div>
+                <div class="processing-step" id="step3">
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <div class="step-text">Formatting clinical notes</div>
+                </div>
+                <div class="processing-step" id="step4">
+                    <div class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <div class="step-text">Generating medical codes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOAP Notes Overlay -->
+    <div class="soap-notes-overlay" id="soapNotesOverlay">
+        <div class="soap-notes-modal">
+            <div class="soap-notes-header">
+                <div class="soap-notes-header-left">
+                    <div class="soap-notes-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <line x1="10" y1="9" x2="8" y2="9"/>
+                        </svg>
+                    </div>
+                    <div class="soap-notes-header-text">
+                        <h2>Clinical Documentation</h2>
+                        <p>SOAP Notes with Medical Codes</p>
+                    </div>
+                    <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:10px 14px;margin:8px 16px 0;font-size:12px;color:#92400e;">
+                        <strong>⚠️ AI-Generated Content:</strong> This documentation was generated by AI and requires physician review and approval. Do not use as the sole basis for clinical decisions.
+                    </div>
+                </div>
+                <button class="soap-notes-close" onclick="closeSoapNotes()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="soap-notes-content">
+                <!-- Left Column: SOAP Notes (70%) — populated dynamically by displayClinicalDoc() -->
+                <div class="soap-notes-main">
+                </div>
+
+                <!-- Right Column: Medical Codes (30%) — populated dynamically by renderMedicalCodesSidebar() -->
+                <div class="soap-notes-sidebar">
+                    <div class="medical-codes-sidebar-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6"/>
+                            <polyline points="8 6 2 12 8 18"/>
+                        </svg>
+                        Medical Codes
+                    </div>
+                    <div class="code-list-sidebar">
+                    </div>
+                </div>
+            </div>
+            <div class="soap-notes-footer">
+                <button class="soap-notes-link-btn" onclick="backToPatientList()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Back to Patient List
+                </button>
+                <div class="soap-notes-actions">
+                    <button class="soap-notes-btn secondary" onclick="editSoapNotes()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Edit Notes
+                    </button>
+                    <button class="soap-notes-btn primary" onclick="approveSoapNotes()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Approve & Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Notes Overlay (First Step) -->
+    <div class="completion-overlay" id="patientNotesOverlay">
+        <div class="completion-container">
+            <div class="completion-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <div>
+                    <div class="completion-title">Patient Visit Summary</div>
+                    <div class="completion-subtitle">Review the summary that will be shared with the patient</div>
+                </div>
+            </div>
+            
+            <div class="completion-content">
+                <div class="completion-patient-notes">
+                    <div class="patient-summary-header">
+                        <div class="patient-summary-meta">
+                            <div class="patient-summary-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                <span id="patientSummaryDate">Loading...</span>
+                            </div>
+                            <div class="patient-summary-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                                </svg>
+                                <span id="patientSummaryVisitType">Follow-up Visit</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="patient-summary-sections" id="patientSummarySections">
+                        <!-- Loading State -->
+                        <div class="patient-summary-loading" id="patientSummaryLoading" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <p>Loading your visit summary...</p>
+                        </div>
+                        
+                        <!-- Dynamic Content Container -->
+                        <div id="patientSummaryContent">
+                            <!-- Today's Results Section -->
+                            <div class="patient-summary-section" id="summaryHowYoureDoing">
+                                <div class="patient-summary-section-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 3v18h18"/>
+                                        <path d="M18 17V9"/>
+                                        <path d="M13 17V5"/>
+                                        <path d="M8 17v-3"/>
+                                    </svg>
+                                    How you're doing
+                                </div>
+                                <div class="patient-summary-list" id="summaryHowYoureDoingContent">
+                                    <!-- Dynamic content will be inserted here -->
+                                </div>
+                            </div>
+
+                            <!-- Medication Change Section -->
+                            <div class="patient-summary-section" id="summaryWhatsChanging">
+                                <div class="patient-summary-section-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                        <rect x="9" y="9" width="6" height="6"/>
+                                        <line x1="9" y1="1" x2="9" y2="4"/>
+                                        <line x1="15" y1="1" x2="15" y2="4"/>
+                                        <line x1="9" y1="20" x2="9" y2="23"/>
+                                        <line x1="15" y1="20" x2="15" y2="23"/>
+                                        <line x1="20" y1="9" x2="23" y2="9"/>
+                                        <line x1="20" y1="14" x2="23" y2="14"/>
+                                        <line x1="1" y1="9" x2="4" y2="9"/>
+                                        <line x1="1" y1="14" x2="4" y2="14"/>
+                                    </svg>
+                                    What's changing
+                                </div>
+                                <div class="patient-summary-list" id="summaryWhatsChangingContent">
+                                    <!-- Dynamic content will be inserted here -->
+                                </div>
+                            </div>
+
+                            <!-- Your Action Items Section -->
+                            <div class="patient-summary-section" id="summaryWhatYouCanDo">
+                                <div class="patient-summary-section-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 11 12 14 22 4"/>
+                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                    </svg>
+                                    What you can do
+                                </div>
+                                <div class="patient-summary-checklist" id="summaryWhatYouCanDoContent">
+                                    <!-- Dynamic content will be inserted here -->
+                                </div>
+                            </div>
+
+                            <!-- Next Appointment Section -->
+                            <div class="patient-summary-section" id="summarySeeYouSoon">
+                                <div class="patient-summary-section-title">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                    See you soon
+                                </div>
+                                <div class="patient-summary-list" id="summarySeeYouSoonContent">
+                                    <!-- Dynamic content will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="completion-actions">
+                <button class="completion-link-btn" onclick="backToPatientList()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Back to Patient List
+                </button>
+                <div class="completion-actions-right">
+                    <button class="completion-btn secondary" onclick="closePatientNotesOverlay()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Edit Summary
+                    </button>
+                    <button class="completion-btn primary" onclick="showFinalCompletionOverlay()">
+                        Continue
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Completion Overlay (Second Step) -->
+    <div class="completion-overlay" id="completionOverlay">
+        <div class="completion-container">
+            <div class="completion-header">
+                <div class="completion-checkmark" id="completionCheckmark">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <!-- Initial spinner state -->
+                <div class="completion-spinner" id="completionSpinner">
+                    <div class="spinner-ring"></div>
+                </div>
+                <!-- Confetti elements -->
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="confetti"></div>
+                <div class="completion-title" id="completionTitle">Finalizing Documentation...</div>
+                <div class="completion-subtitle" id="completionSubtitle">Saving clinical notes to the EHR</div>
+            </div>
+            
+            <div class="completion-content">
+                <div class="completion-section">
+                    <div class="completion-section-title-main">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        Completed Tasks
+                    </div>
+                    <div class="processing-steps">
+                        <div class="processing-step">
+                            <div class="step-icon">
+                                <div class="step-spinner"></div>
+                            </div>
+                            <span class="step-text">Clinical documentation approved and saved</span>
+                        </div>
+                        <div class="processing-step">
+                            <div class="step-icon">
+                                <div class="step-spinner"></div>
+                            </div>
+                            <span class="step-text">SOAP notes saved</span>
+                        </div>
+                        <div class="processing-step" id="billingCodesStep">
+                            <div class="step-icon">
+                                <div class="step-spinner"></div>
+                            </div>
+                            <span class="step-text" id="billingCodesText">Billing codes recorded</span>
+                        </div>
+                        <div class="processing-step">
+                            <div class="step-icon">
+                                <div class="step-spinner"></div>
+                            </div>
+                            <span class="step-text">Patient summary sent to patient portal</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- After Visit Summary Section -->
+                <div class="completion-section" id="afterVisitSummarySection">
+                    <div class="completion-section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        After Visit Summary
+                        <span class="avs-badge">For Patient</span>
+                    </div>
+                    <div class="after-visit-summary-content" id="afterVisitSummaryContent">
+                        <div class="avs-loading">
+                            <div class="avs-loading-spinner"></div>
+                            <span>Loading patient summary...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="completion-section">
+                    <div class="completion-section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <span id="followUpSectionTitle">Follow-up Recommended</span>
+                        <button class="followup-edit-btn" onclick="editFollowup()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Edit
+                        </button>
+                    </div>
+                    
+                    <!-- AI Insight Section -->
+                    <div class="ai-insight-section" id="aiInsightSection">
+                        <svg class="ai-insight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <div class="ai-insight-content">
+                            <div class="ai-insight-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="10"/>
+                                </svg>
+                                AI DETECTED
+                            </div>
+                            <div class="ai-insight-text" id="aiInsightText">
+                                Based on the conversation, a <span class="ai-insight-highlight">follow-up</span> was discussed.
+                            </div>
+                            <div class="ai-insight-footer" id="aiInsightFooter">
+                                The patient can call the front desk at <span class="ai-insight-highlight">(555) 010-0100</span> to schedule.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SMS Notification Section -->
+                    <div class="sms-notification-section" id="smsNotificationSection">
+                        <div class="sms-section-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                            <span class="sms-section-title">Send Follow-up Reminder</span>
+                            <span class="sms-section-badge">SMS</span>
+                        </div>
+                        
+                        <div class="sms-phone-group sms-phone-inline">
+                            <label class="sms-phone-label">Message to <span class="sms-patient-name" id="smsPatientName">Jane Smith</span></label>
+                            <input type="tel" 
+                                   id="smsPhoneInput" 
+                                   class="sms-phone-input sms-phone-input-inline" 
+                                   placeholder="+1 (555) 010-0100"
+                                   value="">
+                        </div>
+                        
+                        <div class="sms-message-group">
+                            <div class="sms-message-label">
+                                <span>Message Preview</span>
+                                <span class="sms-char-counter" id="smsCharCounter">0/160</span>
+                            </div>
+                            <textarea id="smsMessageTextarea" 
+                                      class="sms-message-textarea" 
+                                      placeholder="Loading message from visit summary..."></textarea>
+                        </div>
+                        
+                        <div class="sms-actions">
+                            <button class="sms-skip-btn" onclick="skipSMS()">Skip</button>
+                            <button class="sms-send-btn" id="smsSendBtn" onclick="sendFollowupSMS()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                                Send SMS
+                            </button>
+                        </div>
+                        
+                        <div id="smsStatusContainer"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="completion-actions">
+                <button class="completion-link-btn" onclick="backToSchedule()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Back to Patient List
+                </button>
+                <div class="completion-actions-right">
+                    <button class="completion-btn primary" onclick="backToScheduleDirectly()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Player Overlay - Floating Hands-Free Interface -->
+    <div class="audio-player-overlay" id="audioPlayerOverlay">
+        <div class="audio-player-header">
+            <div class="audio-player-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+            </div>
+            <div class="audio-player-info">
+                <div class="audio-player-title" id="audioPlayerTitle">Listening to Evidence</div>
+                <div class="audio-player-timestamp">Hands-free mode • Speak to respond</div>
+            </div>
+            <button class="audio-player-close" onclick="closeAudioPlayer()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="audio-player-controls">
+            <button class="audio-play-btn" id="audioPlayBtn" onclick="toggleAudioPlayback()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5,3 19,12 5,21"/>
+                </svg>
+            </button>
+            
+            <div class="audio-wave-container">
+                <svg class="audio-wave-svg" viewBox="0 0 200 50" preserveAspectRatio="none">
+                    <path class="audio-wave-path audio-wave-path-1" d="M10,25 Q30,15 50,25 T90,25 T130,25 T170,25 T190,25" />
+                    <path class="audio-wave-path audio-wave-path-2" d="M10,25 Q30,30 50,20 T90,25 T130,25 T170,25 T190,25" />
+                    <path class="audio-wave-path audio-wave-path-3" d="M10,25 Q30,20 50,30 T90,25 T130,25 T170,25 T190,25" />
+                </svg>
+            </div>
+            
+            <div class="audio-time" id="audioTime">0s</div>
+        </div>
+    </div>
+
+<!-- DOMPurify - sanitize user-edited SOAP notes content -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha512-H+rglffZ6f5gF7UJgvH4Naa+fGCgjrHKMgoFOGmcPTRwR6oILo5R+gtzNrpDp7iMV3udbymBVjkeZGNz1Em4rQ==" crossorigin="anonymous"></script>
+
+<!-- Configuration (must load before streaming.js) -->
+<script src="js/config.js"></script>
+
+<!-- Cognito Authentication (must load before main.js) -->
+<script src="js/auth.js"></script>
+
+<!-- Streaming -->
+<script src="js/streaming.js"></script>
+
+<script src="js/main.js"></script>
+
+<!-- Patient Insights Integration -->
+<script> // nosemgrep: insecure-document-method
+    // Will be populated from HealthLake
+    let PATIENT_ID_MAP = {};
+    let PATIENT_INFO = {};
+
+    // Store current patient context
+    let currentPatientId = null;
+    let currentPatientKey = null;
+    let currentInsightsData = null;
+
+    // Load patients from HealthLake on page load
+    async function loadPatientsFromHealthLake() {
+        console.log('Loading patients from HealthLake...');
+        
+        try {
+            const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+            const response = await fetch(backendUrl + '/api/patients');
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error);
+            }
+            
+            console.log('Loaded', data.count, 'patients from HealthLake');
+            
+            // Update the schedule UI (this also populates PATIENT_ID_MAP and PATIENT_INFO)
+            updateScheduleUI(data.patients);
+            
+        } catch (error) {
+            console.error('Failed to load patients:', error);
+            console.log('Make sure backend is running: python backend/server.py');
+        }
+    }
+
+    // Update the schedule screen with real patients
+    function updateScheduleUI(patients) {
+        const container = document.querySelector('.schedule-container');
+        if (!container) return;
+        
+        // Update patient count
+        const statsEl = document.querySelector('.schedule-stats span');
+        if (statsEl) {
+            statsEl.textContent = patients.length + ' patients scheduled';
+        }
+        
+        // Clear existing patients
+        container.innerHTML = '';
+        
+        // Add each patient
+        const times = ['9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:15 PM', '3:00 PM', '4:00 PM'];
+        const durations = ['30 min', '45 min', '30 min', '60 min', '30 min', '45 min', '30 min'];
+        const visitTypes = ['Diabetes Follow-up', 'Annual Physical', 'BP Check', 'Wellness Visit', 'Lab Review', 'Medication Review', 'Follow-up'];
+        
+        patients.forEach((patient, index) => {
+            // Use patient ID as key (guaranteed unique)
+            const key = patient.id;
+            const initials = (patient.given[0] || 'X') + (patient.family[0] || 'X');
+            const time = times[index % times.length];
+            const duration = durations[index % durations.length];
+            const visitType = visitTypes[index % visitTypes.length];
+            
+            // Store in maps using ID as key
+            PATIENT_ID_MAP[key] = patient.id;
+            PATIENT_INFO[key] = {
+                id: patient.id,
+                name: patient.name,
+                initials: initials,
+                age: patient.age,
+                gender: patient.gender,
+                mrn: patient.mrn,
+                birthDate: patient.birthDate || ''
+            };
+            
+            const card = document.createElement('div');
+            card.className = 'patient-card';
+            card.onclick = () => openPatient(key);
+            // nosemgrep: insecure-document-method, html-in-template-string — escapeHtml() wraps all patient data values
+            card.innerHTML = `
+                <div class="patient-time">
+                    <div class="patient-time-main">${escapeHtml(time)}</div>
+                    <div class="patient-time-duration">${escapeHtml(duration)}</div>
+                </div>
+                <div class="patient-avatar">${escapeHtml(initials)}</div>
+                <div class="patient-info">
+                    <div class="patient-name">${escapeHtml(patient.name)}</div>
+                    <div class="patient-details">
+                        <span>${escapeHtml(patient.age || 'N/A')}</span>
+                        <span class="separator">•</span>
+                        <span>${escapeHtml(patient.gender || 'N/A')}</span>
+                        <span class="separator">•</span>
+                        <span>MRN: ${escapeHtml(patient.mrn)}</span>
+                    </div>
+                </div>
+                <div class="patient-badges">
+                    <span class="patient-badge visit-type">${escapeHtml(visitType)}</span>
+                    <span class="patient-badge prep">Pre-visit Ready</span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+        
+        console.log('Patient maps updated:', Object.keys(PATIENT_ID_MAP));
+        // Phase 1 (CCP integration): expose to window so connect-ccp.js can find them
+        window.PATIENT_INFO = PATIENT_INFO;
+        window.PATIENT_ID_MAP = PATIENT_ID_MAP;
+        window.dispatchEvent(new CustomEvent("patientsLoaded"));
+    }
+
+    // Update the header with patient info
+    function updatePatientHeader(patientKey) {
+        const info = PATIENT_INFO[patientKey];
+        if (!info) return;
+
+        // Update patient name in header
+        const nameEl = document.getElementById('headerPatientName');
+        if (nameEl) nameEl.textContent = info.name;
+
+        // Update MRN
+        const mrnEl = document.getElementById('headerPatientMRN');
+        if (mrnEl) mrnEl.textContent = 'MRN: ' + info.mrn;
+
+        // Update demographics
+        const demoEl = document.getElementById('headerPatientDemo');
+        if (demoEl) demoEl.textContent = info.age + ' • ' + info.gender;
+
+        // Update avatar
+        const avatarEl = document.getElementById('headerPatientAvatar');
+        if (avatarEl) {
+            avatarEl.textContent = info.initials;
+        }
+    }
+
+    // Load patient insights when opening a patient
+    async function loadPatientInsights(patientKey) {
+        console.log('loadPatientInsights called with key:', patientKey);
+        
+        const patientId = PATIENT_ID_MAP[patientKey];
+        const info = PATIENT_INFO[patientKey];
+        
+        if (!patientId || !info) {
+            console.error('Unknown patient key:', patientKey);
+            return;
+        }
+
+        currentPatientId = patientId;
+        currentPatientKey = patientKey;
+        window.currentPatientKey = patientKey;  // expose for main.js access
+        
+        console.log('[Insights] Loading insights for patient ID', (patientId || '').substring(0, 8) + '...');
+        
+        // Update header immediately
+        updatePatientHeader(patientKey);
+        
+        // Show loading indicator
+        showInsightsLoading();
+        
+        const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+        
+        try {
+            // Start the job (non-blocking)
+            const startResponse = await fetch(backendUrl + '/api/patient-insights/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    patientId: patientId,
+                    encounterType: 'FOLLOW_UP',
+                    encounterReason: 'Follow-up visit'
+                })
+            });
+            
+            const startData = await startResponse.json();
+            
+            if (!startData.success) {
+                throw new Error(startData.error);
+            }
+            
+            console.log('Job started:', startData.jobArn);
+            
+            // Demo mode: data returned directly, skip polling
+            if (startData.demoData) {
+                console.log('[DEMO] Using cached patient insights data');
+                currentInsightsData = startData.demoData;
+                displayPatientInsights(startData.demoData);
+                return;
+            }
+            
+            // Poll for completion in background
+            pollForInsights(startData.jobArn, patientKey);
+            
+        } catch (error) {
+            console.error('Failed to start patient insights job:', error);
+            showInsightsError(error.message);
+        }
+    }
+    
+    // Poll for job completion
+    async function pollForInsights(jobArn, patientKey) {
+        const maxAttempts = 120; // 10 minutes (120 × 5 seconds)
+        const pollInterval = 5000; // 5 seconds
+        const backendUrl = window.BACKEND_URL || 'http://localhost:5000';
+        
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const response = await fetch(`${backendUrl}/api/patient-insights/job/${encodeURIComponent(jobArn)}`);
+                const data = await response.json();
+                
+                console.log(`Poll ${attempt + 1}: ${data.jobStatus}`, data);
+                
+                // Update loading message with status
+                updateLoadingStatus(attempt + 1, data.jobStatus);
+                
+                if (data.jobStatus === 'SUCCEEDED') {
+                    console.log('Job succeeded! Output URI:', data.insightsOutput?.uri);
+                    
+                    // Fetch the full output from S3
+                    const outputUri = data.insightsOutput?.uri;
+                    if (outputUri) {
+                        const outputResponse = await fetch(`${backendUrl}/api/patient-insights/output/${encodeURIComponent(outputUri)}`);
+                        const outputData = await outputResponse.json();
+                        
+                        console.log('S3 output response:', outputData);
+                        
+                        if (outputData.success) {
+                            currentInsightsData = outputData.data;
+                            displayPatientInsights(outputData.data);
+                        } else {
+                            showInsightsError('Failed to fetch output: ' + outputData.error);
+                        }
+                    } else {
+                        showInsightsError('Job succeeded but no output URI returned');
+                    }
+                    return;
+                }
+                
+                if (data.jobStatus === 'FAILED') {
+                    showInsightsError('Job failed: ' + (data.statusDetails || 'Unknown error'));
+                    return;
+                }
+                
+                // Wait before next poll
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+                
+            } catch (error) {
+                console.error('Poll error:', error);
+            }
+        }
+        
+        showInsightsError('Job timed out after 10 minutes');
+    }
+    
+    function updateLoadingStatus(attempt, status) {
+        const iframe = document.getElementById('previsitIframe');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({
+                type: 'update-previsit',
+                data: {
+                    loading: true,
+                    status: status,
+                    attempt: attempt,
+                    patient: PATIENT_INFO[currentPatientKey]
+                }
+            }, '*');
+        }
+    }
+
+    function showInsightsLoading() {
+        console.log('Loading patient insights... (this may take 30-60 seconds)');
+        
+        // Send loading state to iframe
+        const iframe = document.getElementById('previsitIframe');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({
+                type: 'update-previsit',
+                data: {
+                    loading: true,
+                    patient: PATIENT_INFO[currentPatientKey]
+                }
+            }, '*');
+        }
+    }
+
+    function showInsightsError(message) {
+        console.error('Insights error:', message);
+    }
+
+    function displayPatientInsights(insights) {
+        // Log the raw insights for debugging
+        console.log('=== Patient Insights Loaded ===');
+        
+        // Send data to the iframe
+        const iframe = document.getElementById('previsitIframe');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({
+                type: 'update-previsit',
+                data: {
+                    insights: insights,
+                    patient: PATIENT_INFO[currentPatientKey]
+                }
+            }, '*');
+        }
+        
+        // The insights contain PatientSummary with Sections
+        if (insights && insights.PatientSummary) {
+            const sections = insights.PatientSummary.Sections || [];
+            sections.forEach(section => {
+                const narrative = section.ClinicalNarrative || [];
+                const text = narrative.map(n => n.Text).join('');
+                // PHI-safe: log section structure only — never the clinical narrative text
+                console.log('[Insights] Section "' + section.SectionName.trim() + '" loaded (' + text.length + ' chars; content redacted — PHI)');
+            });
+        }
+    }
+
+    // Override openPatient to also load insights
+    const originalOpenPatient = window.openPatient;
+    window.openPatient = function(patientKey) {
+        // Call original function
+        if (originalOpenPatient) {
+            originalOpenPatient(patientKey);
+        }
+        
+        // Load insights in background
+        loadPatientInsights(patientKey);
+    };
+
+    // Force UI to schedule screen if consultation recently ended
+    (function forceScheduleIfConsultationEnded() {
+        var consultEnded = localStorage.getItem('consultationEnded');
+        if (consultEnded && (Date.now() - parseInt(consultEnded)) < 300000) {
+            console.log('[UI-RESET] Forcing schedule screen (consultation ended)');
+            // Hide patient chart elements
+            document.addEventListener('DOMContentLoaded', function() {
+                var scheduleScreen = document.getElementById('scheduleScreen');
+                if (scheduleScreen) scheduleScreen.classList.remove('hidden');
+                var patientPortal = document.querySelector('.patient-portal-background');
+                if (patientPortal) patientPortal.style.display = 'none';
+                var previsitContainer = document.getElementById('previsitContainer');
+                if (previsitContainer) previsitContainer.classList.remove('active');
+                var headers = document.querySelector('.full-width-headers');
+                if (headers) headers.style.display = 'none';
+                var soapOverlay = document.getElementById('soapNotesOverlay');
+                if (soapOverlay) { soapOverlay.classList.remove('active'); soapOverlay.style.opacity = '0'; soapOverlay.style.visibility = 'hidden'; }
+            });
+        }
+    })();
+
+    // Check localStorage for active patient (bridging from background iframe)
+    function checkForActivePatient() {
+        try {
+            // Don't reopen patient if consultation recently ended
+            var consultEnded = localStorage.getItem('consultationEnded');
+            if (consultEnded && (Date.now() - parseInt(consultEnded)) < 300000) {
+                console.log('[BRIDGE] Consultation recently ended — not reopening patient');
+                return;
+            }
+            var stored = localStorage.getItem('activePatient');
+            if (stored) {
+                var data = JSON.parse(stored);
+                // Only use if less than 5 minutes old
+                if (Date.now() - data.timestamp < 300000) {
+                    console.log('[BRIDGE] Found active patient in localStorage:', data.patientId);
+                    window.currentStreamingSessionId = data.contactId;
+                    // Wait for patients to load, then open
+                    function waitAndOpen() {
+                        if (Object.keys(window.PATIENT_INFO || {}).length > 0) {
+                            console.log('[BRIDGE] Patients loaded, opening:', data.patientId);
+                            window.openPatient(data.patientId);
+                        } else {
+                            setTimeout(waitAndOpen, 500);
+                        }
+                    }
+                    waitAndOpen();
+                }
+            }
+        } catch(e) { console.warn('[BRIDGE] localStorage check failed:', e); }
+    }
+    // Check immediately and also after a short delay
+    setTimeout(checkForActivePatient, 2000);
+    // Also listen for storage events (fires when OTHER iframe writes to localStorage)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'activePatient' && e.newValue) {
+            console.log('[BRIDGE] Storage event: activePatient updated');
+            checkForActivePatient();
+        }
+    });
+
+    // Load patients when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set today's date dynamically
+        const dateEl = document.getElementById('scheduleDate');
+        if (dateEl) {
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: '2-digit' };
+            dateEl.textContent = today.toLocaleDateString('en-US', options);
+        }
+
+        // Initialize Cognito authentication (if configured with real values)
+        const cognitoConfigured = window.COGNITO_CONFIG && 
+            window.COGNITO_CONFIG.userPoolId && 
+            !window.COGNITO_CONFIG.userPoolId.startsWith('YOUR_') &&
+            window.CognitoAuth;
+        if (cognitoConfigured) {
+            CognitoAuth.init(window.COGNITO_CONFIG);
+            // Wait for login before loading patients — loadPatientsFromHealthLake
+            // will be called after successful login via _onLoginSuccess path.
+            // But we still need to load patients once auth completes.
+            // Use a MutationObserver to detect when login screen is removed.
+            const observer = new MutationObserver(function(mutations) {
+                for (const m of mutations) {
+                    for (const node of m.removedNodes) {
+                        if (node.id === 'cognitoLoginScreen') {
+                            observer.disconnect();
+                            loadPatientsFromHealthLake();
+                            return;
+                        }
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        } else {
+            // No auth — load patients immediately
+            loadPatientsFromHealthLake();
+        }
+    });
+
+    console.log('Patient Insights integration loaded');
+    console.log('Backend proxy:', window.BACKEND_URL || 'http://localhost:5000');
+</script>
+
+<!-- Amazon Connect CCP container (Phase 1) -->
+<div id="ccpContainer" style="display:none; position:fixed; top:0; left:0; bottom:0; width:320px; z-index:2147483647; background:white; box-shadow:2px 0 8px rgba(0,0,0,0.12); border-right:1px solid #e5e7eb;"></div>
+<script src="js/connect-ccp.js"></script>
+</html>

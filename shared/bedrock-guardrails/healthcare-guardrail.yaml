@@ -1,0 +1,185 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Amazon Bedrock Guardrail for healthcare clinical AI applications.
+  Implements Responsible AI controls required by AWS Code Security Review (CSR)
+  for clinical decision support, ambient documentation, and patient-facing AI
+  workflows. Deploys content filters, PII redaction, and denied topics tuned
+  for healthcare AI sample applications.
+
+  After deployment, export the Guardrail ID and Version from this stack and set
+  the BEDROCK_GUARDRAIL_ID and BEDROCK_GUARDRAIL_VERSION environment variables
+  on the provider-workflow backend service.
+
+Parameters:
+  GuardrailName:
+    Type: String
+    Default: healthcare-clinical-ai-guardrail
+    Description: Name of the Bedrock Guardrail
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment tag for the guardrail
+
+Resources:
+  HealthcareGuardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Sub '${GuardrailName}-${Environment}'
+      Description: >-
+        Healthcare AI guardrail: content filters, PII redaction, denied
+        topics for unsupervised diagnosis/treatment. See repo RESPONSIBLE_AI.md.
+      BlockedInputMessaging: >
+        I cannot process this request. The content appears to violate our
+        healthcare AI usage policy. Please rephrase your request without
+        protected health information or clinically sensitive details.
+      BlockedOutputsMessaging: >
+        The response was blocked by safety controls. AI-generated clinical
+        content must be reviewed and approved by a licensed healthcare provider
+        before use in patient care. If you are seeing this message repeatedly,
+        contact your administrator.
+
+      # ──────────────── Content filtering (high strength for all categories) ────────────────
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: SEXUAL
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: VIOLENCE
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: HATE
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: INSULTS
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: MISCONDUCT
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: PROMPT_ATTACK
+            InputStrength: HIGH
+            OutputStrength: NONE  # Output strength not configurable for PROMPT_ATTACK
+
+      # ──────────────── PII redaction (ANONYMIZE patient identifiers) ────────────────
+      SensitiveInformationPolicyConfig:
+        PiiEntitiesConfig:
+          - Type: NAME
+            Action: ANONYMIZE
+          - Type: EMAIL
+            Action: ANONYMIZE
+          - Type: PHONE
+            Action: ANONYMIZE
+          - Type: US_SOCIAL_SECURITY_NUMBER
+            Action: BLOCK
+          - Type: US_BANK_ACCOUNT_NUMBER
+            Action: BLOCK
+          - Type: CREDIT_DEBIT_CARD_NUMBER
+            Action: BLOCK
+          - Type: ADDRESS
+            Action: ANONYMIZE
+          - Type: AGE
+            Action: ANONYMIZE
+          - Type: DRIVER_ID
+            Action: BLOCK
+          - Type: PASSWORD
+            Action: BLOCK
+          - Type: USERNAME
+            Action: ANONYMIZE
+          - Type: IP_ADDRESS
+            Action: ANONYMIZE
+          - Type: MAC_ADDRESS
+            Action: ANONYMIZE
+          - Type: US_PASSPORT_NUMBER
+            Action: BLOCK
+
+      # ──────────────── Denied topics (prevent unsupervised clinical decisioning) ────────────────
+      TopicPolicyConfig:
+        TopicsConfig:
+          - Name: UnsupervisedMedicalDiagnosis
+            Type: DENY
+            Definition: >
+              Providing a definitive medical diagnosis without explicit framing
+              that the AI output requires review and approval by a licensed
+              healthcare provider before use in patient care.
+            Examples:
+              - "You definitely have type 2 diabetes."
+              - "This patient has cancer."
+              - "The diagnosis is confirmed without further testing."
+          - Name: UnsupervisedTreatmentRecommendation
+            Type: DENY
+            Definition: >
+              Recommending or prescribing specific medications, dosages, or
+              treatment plans without explicit framing that decisions require
+              physician approval.
+            Examples:
+              - "Take 500mg of metformin twice daily."
+              - "Start the patient on lisinopril immediately."
+              - "Discontinue all current medications."
+          - Name: MedicalEmergencyResponse
+            Type: DENY
+            Definition: >
+              Directing emergency or life-threatening situations rather than
+              advising the user to call emergency services or a healthcare provider.
+            Examples:
+              - "Don't go to the emergency room, you'll be fine."
+              - "You don't need to call 911."
+
+      # ──────────────── Word filters (block known anti-patterns) ────────────────
+      WordPolicyConfig:
+        ManagedWordListsConfig:
+          - Type: PROFANITY
+        WordsConfig:
+          # Block phrases that would indicate the model is bypassing the
+          # human-in-the-loop requirement
+          - Text: "no review needed"
+          - Text: "skip physician approval"
+          - Text: "diagnosis confirmed"
+          - Text: "no further testing required"
+
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: HealthcareClinicalAI
+        - Key: ManagedBy
+          Value: CloudFormation
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+
+  # Publish a version of the guardrail so we can pin to it
+  HealthcareGuardrailVersion:
+    Type: AWS::Bedrock::GuardrailVersion
+    Properties:
+      GuardrailIdentifier: !GetAtt HealthcareGuardrail.GuardrailId
+      Description: !Sub 'Initial published version (${Environment})'
+
+Outputs:
+  GuardrailId:
+    Description: >
+      The Bedrock Guardrail ID. Set this as the BEDROCK_GUARDRAIL_ID environment
+      variable on the provider-workflow backend.
+    Value: !GetAtt HealthcareGuardrail.GuardrailId
+    Export:
+      Name: !Sub '${AWS::StackName}-GuardrailId'
+
+  GuardrailArn:
+    Description: ARN of the Bedrock Guardrail
+    Value: !GetAtt HealthcareGuardrail.GuardrailArn
+    Export:
+      Name: !Sub '${AWS::StackName}-GuardrailArn'
+
+  GuardrailVersion:
+    Description: >
+      The published version of the guardrail. Set as BEDROCK_GUARDRAIL_VERSION.
+      Use 'DRAFT' during development, the version number (1, 2, etc.) for production.
+    Value: !GetAtt HealthcareGuardrailVersion.Version
+    Export:
+      Name: !Sub '${AWS::StackName}-GuardrailVersion'
+
+  DeploymentInstructions:
+    Description: How to wire the guardrail into the application
+    Value: !Sub |
+      After deployment, set these environment variables on the backend ECS task definition:
+        BEDROCK_GUARDRAIL_ID=${HealthcareGuardrail.GuardrailId}
+        BEDROCK_GUARDRAIL_VERSION=${HealthcareGuardrailVersion.Version}

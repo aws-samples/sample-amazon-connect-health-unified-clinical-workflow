@@ -1,0 +1,181 @@
+{
+  "success": true,
+  "patientStory": "[REF2]61-year-old[/REF2] [REF3]female presenting for[/REF3] follow-up visit. She carries diagnoses of [REF5]idiopathic gout of the right wrist (active since 10/21/2025)[/REF5], [REF6]right wrist pain[/REF6], and [REF7]contusion of right upper arm[/REF7]. [REF33]Right wrist pain was documented on 03/19/2024,[/REF33] [REF34]on 10/06/2025,[/REF34] [REF35]on 10/21/2025,[/REF35] and [REF36]on 11/13/2025,[/REF36] [REF37]showing a recurrent pattern from 03/19/2024 to 11/13/2025[/REF37]. [REF23]She reported similar symptoms in March 2023 and July 2023 that were treated with colchicine.[/REF23] [REF10]Colchicine 0.6 mg oral tablet[/REF10] was recently prescribed with [REF9]dosage adjustment required due to drug interaction with carvedilol[/REF9] [REF12]12.5 mg twice daily[/REF12].\n\n[REF22]On 10/21/2025, the patient presented with right wrist pain without history of injury[/REF22] and [REF25]examination showed swelling of the dorsal aspect of right wrist without erythema[/REF25]. [REF24]She stated she did not have any colchicine at home.[/REF24] [REF26]Radiographs from 10/06/2024 were reviewed, which[/REF26] [REF27]demonstrated a cyst in the ulnar aspect of lunate with positive ulnar variance[/REF27] and [REF28]calcification in soft tissues dorsal to the lunate[/REF28]. [REF16]Uric acid was elevated at 9.6 mg/dL.[/REF16] [REF29]The impression was possible gout flare of the right wrist,[/REF29] and [REF30]the patient was also noted to have cysts in the ulnar aspect of lunate possibly secondary to ulnar abutment syndrome[/REF30]; [REF31]a rheumatoid panel and[/REF31] [REF32]MRI of the right wrist were recommended[/REF32].",
+  "sinceLastVisit": [
+    {
+      "header": "Laboratory Results (10/22/2025)",
+      "items": [
+        "[REF19]Rheumatoid factor 10 IU/mL (normal)[/REF19]"
+      ],
+      "_summary": "Rheumatoid panel testing completed."
+    },
+    {
+      "header": "Laboratory Results (10/24/2025)",
+      "items": [
+        "[REF20]ANA by IFA negative (normal)[/REF20]",
+        "[REF21]CCP antibodies IgG/IgA 6 U (normal)[/REF21]"
+      ],
+      "_summary": "Additional autoimmune workup completed."
+    }
+  ],
+  "visitPriorities": {
+    "mustAddress": [
+      {
+        "title": "[REF16]Elevated Uric Acid[/REF16]",
+        "description": "9.6 mg/dL on 10/21/2025 in setting of suspected gout flare",
+        "severity": "high"
+      },
+      {
+        "title": "[REF17]Elevated Sedimentation Rate[/REF17]",
+        "description": "30 mm/h on 10/21/2025",
+        "severity": "high"
+      },
+      {
+        "title": "[REF9]Colchicine-Carvedilol Drug Interaction[/REF9]",
+        "description": "Dosage adjustment required; confirm current regimen tolerability",
+        "severity": "high"
+      },
+      {
+        "title": "[REF30]Lunate Cysts with Possible Ulnar Abutment Syndrome[/REF30]",
+        "description": "Noted on 10/21/2025; may contribute to recurrent wrist symptoms",
+        "severity": "high"
+      }
+    ],
+    "outstanding": [
+      {
+        "title": "[REF32]MRI Right Wrist[/REF32]",
+        "description": "Recommended 10/21/2025; completion status unknown",
+        "severity": "moderate"
+      }
+    ]
+  },
+  "evidenceMap": {
+    "REF1": [
+      "Patient/698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2"
+    ],
+    "REF2": [
+      "Patient/698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2"
+    ],
+    "REF3": [
+      "Patient/698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2"
+    ],
+    "REF4": [
+      "Encounter/0bc8fd590e0de4b4851b1f098b71c8ef1e42deed0d5389128dc8444653a6df0c"
+    ],
+    "REF5": [
+      "Condition/2c9b9a3af0e3007de26b8fe18a894a6cd02399239cdc6af5ecea8d43b53ffc3d"
+    ],
+    "REF6": [
+      "Condition/25af9a0d85731a16553265c2eb211b8fbde9eed0e1426a1c3076b81a75a56cc3"
+    ],
+    "REF7": [
+      "Condition/03624c80b609716072b0477218e78cc7c1104ac5a2c83be3ca6b80fad5846cf8"
+    ],
+    "REF8": [
+      "MedicationRequest/628a1b68c35d06b6f5f030b4a084bcd932c87664831705fefc759b244be2e35f"
+    ],
+    "REF9": [
+      "DocumentReference/5cf6abb3c315f49e7e33ca7065af60e452e92457f44df4437ed3dc8e53063f92",
+      "DocumentReference/731d06e630606b643364b0fcb59ee64999b598a39c34ba0f9006619951a790d7"
+    ],
+    "REF10": [
+      "MedicationRequest/628a1b68c35d06b6f5f030b4a084bcd932c87664831705fefc759b244be2e35f"
+    ],
+    "REF11": [
+      "DocumentReference/0096330e8459ddf4cdc8d0c33fff9209cad0d83c1f6728d47fd323a8a8bbf7a5"
+    ],
+    "REF12": [
+      "DocumentReference/0096330e8459ddf4cdc8d0c33fff9209cad0d83c1f6728d47fd323a8a8bbf7a5"
+    ],
+    "REF13": [
+      "DocumentReference/0096330e8459ddf4cdc8d0c33fff9209cad0d83c1f6728d47fd323a8a8bbf7a5"
+    ],
+    "REF14": [
+      "DocumentReference/0096330e8459ddf4cdc8d0c33fff9209cad0d83c1f6728d47fd323a8a8bbf7a5"
+    ],
+    "REF15": [
+      "DocumentReference/0096330e8459ddf4cdc8d0c33fff9209cad0d83c1f6728d47fd323a8a8bbf7a5"
+    ],
+    "REF16": [
+      "Observation/1a6727c4e3c15968be035a9ac4dabf700d76335284281f22c6bd49d382a5abb7"
+    ],
+    "REF17": [
+      "Observation/0d34ed22cecc1d1010cabe71594302d7eb821209c67197a63b298331a58d6f4f"
+    ],
+    "REF18": [
+      "Observation/2cc2f2cc174d0e5177440f8a3d080068395e951bd7c8eeba715ad62b856927de"
+    ],
+    "REF19": [
+      "Observation/470fce6e42e7685edc22b030793547e96bae9a5e23004c5575cb4c7893149d34"
+    ],
+    "REF20": [
+      "Observation/3c70895619b4dc5904fcd6bc988aeea3fd3ab521e1bb2e9b6c863ac1fbc0ae08"
+    ],
+    "REF21": [
+      "Observation/e425540765c54f0358ec26bb531e07ccb97d45af4a3bfe4e24756ed5629d8b21"
+    ],
+    "REF22": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF23": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF24": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF25": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF26": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF27": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF28": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF29": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF30": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF31": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF32": [
+      "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+    ],
+    "REF33": [
+      "Condition/b6d7a05b01455c1193fc86d41d2d50c819982732115707de9f7aa8be2b2d0213"
+    ],
+    "REF34": [
+      "Condition/3494191bff6c80a585558fe52e32727e289272519b2a865e8f7afd7ae2b7666a"
+    ],
+    "REF35": [
+      "Condition/c90db25a4478d528b41463d7721fcee21cd504432e7e7ccea7221056b748805c"
+    ],
+    "REF36": [
+      "Condition/25af9a0d85731a16553265c2eb211b8fbde9eed0e1426a1c3076b81a75a56cc3"
+    ],
+    "REF37": [
+      "Condition/b6d7a05b01455c1193fc86d41d2d50c819982732115707de9f7aa8be2b2d0213",
+      "Condition/3494191bff6c80a585558fe52e32727e289272519b2a865e8f7afd7ae2b7666a",
+      "Condition/c90db25a4478d528b41463d7721fcee21cd504432e7e7ccea7221056b748805c",
+      "Condition/25af9a0d85731a16553265c2eb211b8fbde9eed0e1426a1c3076b81a75a56cc3"
+    ]
+  },
+  "raw": "PATIENT STORY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n[REF2]61-year-old[/REF2] [REF3]female presenting for[/REF3] follow-up visit. She carries diagnoses of [REF5]idiopathic gout of the right wrist (active since 10/21/2025)[/REF5], [REF6]right wrist pain[/REF6], and [REF7]contusion of right upper arm[/REF7]. [REF33]Right wrist pain was documented on 03/19/2024,[/REF33] [REF34]on 10/06/2025,[/REF34] [REF35]on 10/21/2025,[/REF35] and [REF36]on 11/13/2025,[/REF36] [REF37]showing a recurrent pattern from 03/19/2024 to 11/13/2025[/REF37]. [REF23]She reported similar symptoms in March 2023 and July 2023 that were treated with colchicine.[/REF23] [REF10]Colchicine 0.6 mg oral tablet[/REF10] was recently prescribed with [REF9]dosage adjustment required due to drug interaction with carvedilol[/REF9] [REF12]12.5 mg twice daily[/REF12].\n\n[REF22]On 10/21/2025, the patient presented with right wrist pain without history of injury[/REF22] and [REF25]examination showed swelling of the dorsal aspect of right wrist without erythema[/REF25]. [REF24]She stated she did not have any colchicine at home.[/REF24] [REF26]Radiographs from 10/06/2024 were reviewed, which[/REF26] [REF27]demonstrated a cyst in the ulnar aspect of lunate with positive ulnar variance[/REF27] and [REF28]calcification in soft tissues dorsal to the lunate[/REF28]. [REF16]Uric acid was elevated at 9.6 mg/dL.[/REF16] [REF29]The impression was possible gout flare of the right wrist,[/REF29] and [REF30]the patient was also noted to have cysts in the ulnar aspect of lunate possibly secondary to ulnar abutment syndrome[/REF30]; [REF31]a rheumatoid panel and[/REF31] [REF32]MRI of the right wrist were recommended[/REF32].\n\nSINCE LAST VISIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nLaboratory Results (10/22/2025):\nRheumatoid panel testing completed.\n\u00b7 [REF19]Rheumatoid factor 10 IU/mL (normal)[/REF19]\n\nLaboratory Results (10/24/2025):\nAdditional autoimmune workup completed.\n\u00b7 [REF20]ANA by IFA negative (normal)[/REF20]\n\u00b7 [REF21]CCP antibodies IgG/IgA 6 U (normal)[/REF21]\n\nVISIT PRIORITIES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nTODAY'S VISIT \u2014 MUST ADDRESS\n\n[REF16]Elevated Uric Acid[/REF16]\n9.6 mg/dL on 10/21/2025 in setting of suspected gout flare\n\n[REF17]Elevated Sedimentation Rate[/REF17]\n30 mm/h on 10/21/2025\n\n[REF9]Colchicine-Carvedilol Drug Interaction[/REF9]\nDosage adjustment required; confirm current regimen tolerability\n\n[REF30]Lunate Cysts with Possible Ulnar Abutment Syndrome[/REF30]\nNoted on 10/21/2025; may contribute to recurrent wrist symptoms\n\nOUTSTANDING \u2014 CONFIRM STATUS\n\n[REF32]MRI Right Wrist[/REF32]\nRecommended 10/21/2025; completion status unknown\n\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+  "model": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "usage": {
+    "input_tokens": 3752,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1050
+  }
+}

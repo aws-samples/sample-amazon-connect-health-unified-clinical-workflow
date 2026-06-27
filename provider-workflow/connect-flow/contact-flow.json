@@ -1,0 +1,140 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "1",
+  "Metadata": {
+    "entryPointPosition": {"x": 20, "y": 20},
+    "ActionMetadata": {
+      "1": {"position": {"x": 200, "y": 20}},
+      "2": {"position": {"x": 450, "y": 20}},
+      "3": {"position": {"x": 700, "y": 20}},
+      "4": {"position": {"x": 950, "y": 20}},
+      "5": {"position": {"x": 1200, "y": 20}},
+      "6": {"position": {"x": 1450, "y": 20}},
+      "7": {"position": {"x": 1700, "y": 20}},
+      "8": {"position": {"x": 700, "y": 300}},
+      "9": {"position": {"x": 950, "y": 300}}
+    }
+  },
+  "Actions": [
+    {
+      "Identifier": "1",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Welcome to the clinic. Press 1 for Elena Rodriguez, 2 for Diego Ramirez, 3 for Marcia Oliveria.",
+        "TextToSpeechType": "text"
+      },
+      "Transitions": {
+        "NextAction": "2",
+        "Errors": [{"NextAction": "8", "ErrorType": "NoMatchingError"}]
+      }
+    },
+    {
+      "Identifier": "2",
+      "Type": "GetParticipantInput",
+      "Parameters": {
+        "Text": "Please make your selection now.",
+        "TextToSpeechType": "text",
+        "InputTimeLimitSeconds": "5",
+        "DTMFConfiguration": {
+          "MaxDigits": 1,
+          "InputTerminationSequence": "#"
+        }
+      },
+      "Transitions": {
+        "NextAction": "3",
+        "Errors": [
+          {"NextAction": "8", "ErrorType": "InputTimeLimitExceeded"},
+          {"NextAction": "8", "ErrorType": "NoMatchingCondition"},
+          {"NextAction": "8", "ErrorType": "NoMatchingError"}
+        ]
+      }
+    },
+    {
+      "Identifier": "3",
+      "Type": "InvokeLambdaFunction",
+      "Parameters": {
+        "LambdaFunctionARN": "<PATIENT_VERIFICATION_LAMBDA_ARN>",
+        "InvocationTimeLimitSeconds": "8",
+        "LambdaInvocationAttributes": {
+          "patient_selection": "$.StoredCustomerInput"
+        },
+        "ResponseValidation": {
+          "ResponseType": "STRING_MAP"
+        }
+      },
+      "Transitions": {
+        "NextAction": "4",
+        "Errors": [{"NextAction": "8", "ErrorType": "NoMatchingError"}]
+      }
+    },
+    {
+      "Identifier": "4",
+      "Type": "UpdateContactAttributes",
+      "Parameters": {
+        "Attributes": {
+          "patient_id": "$.External.patient_id",
+          "patient_name": "$.External.patient_name",
+          "domain_id": "$.External.domain_id"
+        }
+      },
+      "Transitions": {
+        "NextAction": "5",
+        "Errors": [{"NextAction": "8", "ErrorType": "NoMatchingError"}]
+      }
+    },
+    {
+      "Identifier": "5",
+      "Type": "StartMediaStreaming",
+      "Parameters": {
+        "MediaStreamTypes": ["AUDIO"],
+        "Participants": [{"ParticipantType": "Customer"}]
+      },
+      "Transitions": {
+        "NextAction": "6",
+        "Errors": [{"NextAction": "8", "ErrorType": "NoMatchingError"}]
+      }
+    },
+    {
+      "Identifier": "6",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Connecting you to your clinician now.",
+        "TextToSpeechType": "text"
+      },
+      "Transitions": {
+        "NextAction": "7",
+        "Errors": [{"NextAction": "8", "ErrorType": "NoMatchingError"}]
+      }
+    },
+    {
+      "Identifier": "7",
+      "Type": "TransferContactToQueue",
+      "Parameters": {},
+      "Transitions": {
+        "NextAction": "9",
+        "Errors": [
+          {"NextAction": "8", "ErrorType": "QueueAtCapacity"},
+          {"NextAction": "8", "ErrorType": "NoMatchingError"}
+        ]
+      }
+    },
+    {
+      "Identifier": "8",
+      "Type": "MessageParticipant",
+      "Parameters": {
+        "Text": "Sorry, an error occurred. Goodbye.",
+        "TextToSpeechType": "text"
+      },
+      "Transitions": {
+        "NextAction": "9",
+        "Errors": [{"NextAction": "9", "ErrorType": "NoMatchingError"}]
+      }
+    },
+    {
+      "Identifier": "9",
+      "Type": "DisconnectParticipant",
+      "Parameters": {},
+      "Transitions": {}
+    }
+  ]
+}

@@ -1,0 +1,318 @@
+{
+  "PatientSummaries": [
+    {
+      "PatientSummary": {
+        "JobId": "85e7ecee-2757-462f-9910-4b2b81077cbb",
+        "SummaryType": "Pre-visit",
+        "PatientId": "698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2",
+        "GeneratedAt": "2026-02-27T05:29:55.688464",
+        "Sections": [
+          {
+            "SectionName": "# PATIENT_AND_ENCOUNTER_OVERVIEW\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "## Overview\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Márcia Oliveria is a",
+                "Evidence": [
+                  "Patient/698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2"
+                ]
+              },
+              {
+                "Text": " 61-year-old",
+                "Evidence": [
+                  "Patient/698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2"
+                ]
+              },
+              {
+                "Text": " female presenting for",
+                "Evidence": [
+                  "Patient/698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2"
+                ]
+              },
+              {
+                "Text": " follow-up visit.",
+                "Evidence": []
+              },
+              {
+                "Text": " The\npatient's last visit was on 10/24/2025 for right wrist pain evaluation.\n",
+                "Evidence": [
+                  "Encounter/0bc8fd590e0de4b4851b1f098b71c8ef1e42deed0d5389128dc8444653a6df0c"
+                ]
+              },
+              {
+                "Text": "## Chronic and Active Conditions\n",
+                "Evidence": []
+              },
+              {
+                "Text": "* Idiopathic gout, right wrist (diagnosed 10/21/2025)",
+                "Evidence": [
+                  "Condition/2c9b9a3af0e3007de26b8fe18a894a6cd02399239cdc6af5ecea8d43b53ffc3d"
+                ]
+              },
+              {
+                "Text": "* Pain in right wrist (documented 11/13/2025)",
+                "Evidence": [
+                  "Condition/25af9a0d85731a16553265c2eb211b8fbde9eed0e1426a1c3076b81a75a56cc3"
+                ]
+              },
+              {
+                "Text": "* Contusion of right upper arm\n",
+                "Evidence": [
+                  "Condition/03624c80b609716072b0477218e78cc7c1104ac5a2c83be3ca6b80fad5846cf8"
+                ]
+              },
+              {
+                "Text": "## Recent Care\n",
+                "Evidence": []
+              },
+              {
+                "Text": "The patient was seen on 10/06/2025 for right wrist pain and swelling.",
+                "Evidence": [
+                  "Encounter/357cb5c17fb4c708d9e6b55ea0ff0d0f67ae6f384846389e193574bfd9878546"
+                ]
+              },
+              {
+                "Text": " She was\nalso seen on 05/26/2025 for right upper arm contusion after a fall.\n",
+                "Evidence": [
+                  "Encounter/21e3a290ac14a6e2690016b8327ae8d923028631bde6a38edc870857142fc4af"
+                ]
+              },
+              {
+                "Text": "## Current Medications\n",
+                "Evidence": []
+              },
+              {
+                "Text": "* Colchicine 0.6 mg oral daily (prescribed 10/21/2025)",
+                "Evidence": [
+                  "MedicationRequest/628a1b68c35d06b6f5f030b4a084bcd932c87664831705fefc759b244be2e35f"
+                ]
+              },
+              {
+                "Text": "* Atorvastatin 80 mg oral once daily",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Carvedilol 12.5 mg oral twice daily",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Clopidogrel 75 mg oral once daily",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Lisinopril-hydrochlorothiazide 20-25 mg per tablet",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Trulicity 1.5 mg/0.5 mL subcutaneous injection",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Aspirin 81 mg oral daily",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Latanoprost 0.005% ophthalmic solution at bedtime",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Dorzolamide-timolol 2-0.5% ophthalmic solution twice daily",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "* Brimonidine 0.2% ophthalmic solution twice daily\n",
+                "Evidence": [
+                  "DocumentReference/0bfec5eadc9d683ca7e1381cda6e26f5bbe01d75b41b0ec3bd89d1ad93c89241"
+                ]
+              },
+              {
+                "Text": "## Recent Results\n",
+                "Evidence": []
+              },
+              {
+                "Text": "* Uric acid was elevated at 9.6 mg/dL on 10/21/2025",
+                "Evidence": [
+                  "Observation/1a6727c4e3c15968be035a9ac4dabf700d76335284281f22c6bd49d382a5abb7"
+                ]
+              },
+              {
+                "Text": "* Sedimentation rate was 30 mm/h on 10/21/2025",
+                "Evidence": [
+                  "Observation/0d34ed22cecc1d1010cabe71594302d7eb821209c67197a63b298331a58d6f4f"
+                ]
+              },
+              {
+                "Text": "* CRP was 0.34 mg/dL on 10/21/2025",
+                "Evidence": [
+                  "Observation/2cc2f2cc174d0e5177440f8a3d080068395e951bd7c8eeba715ad62b856927de"
+                ]
+              },
+              {
+                "Text": "* Hemoglobin was 13.1 g/dL on 10/21/2025",
+                "Evidence": [
+                  "Observation/7538357c319d45bbed32cc6591753fe41287f22b081051344c511483354b664d"
+                ]
+              },
+              {
+                "Text": "* WBC was 9.0 x10³/uL on 10/21/2025",
+                "Evidence": [
+                  "Observation/d64f5a17dce6a9203f7376f32294afbd9d76406e8c6154488d3cf4d31fe3063f"
+                ]
+              },
+              {
+                "Text": "* Rheumatoid factor was 10 IU/mL on 10/22/2025",
+                "Evidence": [
+                  "Observation/470fce6e42e7685edc22b030793547e96bae9a5e23004c5575cb4c7893149d34"
+                ]
+              },
+              {
+                "Text": "* ANA by IFA was negative on 10/24/2025",
+                "Evidence": [
+                  "Observation/3c70895619b4dc5904fcd6bc988aeea3fd3ab521e1bb2e9b6c863ac1fbc0ae08"
+                ]
+              },
+              {
+                "Text": "* CCP antibodies IgG/IgA was 6 U on 10/24/2025\n",
+                "Evidence": [
+                  "Observation/e425540765c54f0358ec26bb531e07ccb97d45af4a3bfe4e24756ed5629d8b21"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# SINCE_LAST_VISIT\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "The patient presented on 10/21/2025 with right wrist pain without history of\ninjury.",
+                "Evidence": [
+                  "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+                ]
+              },
+              {
+                "Text": " She had similar symptoms in March 2024 and was treated with colchicine.",
+                "Evidence": [
+                  "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+                ]
+              },
+              {
+                "Text": "\nPhysical examination on 10/21/2025 showed swelling of the dorsal aspect of the\nright wrist without erythema.",
+                "Evidence": [
+                  "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+                ]
+              },
+              {
+                "Text": " Imaging revealed calcification in soft tissues\ndorsal to the lunate.",
+                "Evidence": [
+                  "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+                ]
+              },
+              {
+                "Text": " Rheumatoid panel and MRI of the right wrist were\nrecommended on 10/21/2025.",
+                "Evidence": [
+                  "DocumentReference/ad381bfe2854d0f2dca28e51946679e277cbb2108d8936637216dd57c71f8c87"
+                ]
+              },
+              {
+                "Text": " The pharmacy called on 10/21/2025 regarding a drug\ninteraction between colchicine and carvedilol, and",
+                "Evidence": [
+                  "DocumentReference/5cf6abb3c315f49e7e33ca7065af60e452e92457f44df4437ed3dc8e53063f92"
+                ]
+              },
+              {
+                "Text": " the colchicine prescription\nwas updated on 10/21/2025 due to this medication interaction.\n",
+                "Evidence": [
+                  "DocumentReference/731d06e630606b643364b0fcb59ee64999b598a39c34ba0f9006619951a790d7"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# TRENDS\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "* Uric acid was elevated at 9.6 mg/dL on 10/21/2025,",
+                "Evidence": [
+                  "Observation/1a6727c4e3c15968be035a9ac4dabf700d76335284281f22c6bd49d382a5abb7"
+                ]
+              },
+              {
+                "Text": " supporting active gout\ndiagnosis\n",
+                "Evidence": [
+                  "Observation/1a6727c4e3c15968be035a9ac4dabf700d76335284281f22c6bd49d382a5abb7",
+                  "Condition/2c9b9a3af0e3007de26b8fe18a894a6cd02399239cdc6af5ecea8d43b53ffc3d"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# CMS_HCC_CODING_ANALYSIS\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "Morbid Obesity\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Last assessed January 2025. Confirm if still present.\n",
+                "Evidence": [
+                  "Condition/2fdd92141e71ddf433006fe7d4534d4eed251222c172d6017ed81cef353e706c",
+                  "Condition/789a57266c68360bf5439f9f0120f82c66572786e0b85565d363655bf065d63f",
+                  "Condition/e898bc620e85c958209e0b9c874e67284dfb651f2987afef8991fbf21e0dfa3d",
+                  "Condition/eab56b96a366dd2844c37174a2e978c609d8f340bcf0501f92f3fa49c0cf389d"
+                ]
+              },
+              {
+                "Text": "Rheumatoid Arthritis\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Last assessed February 2026. Confirm if still present.\n",
+                "Evidence": [
+                  "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5",
+                  "Condition/f51369669bc6cfabd5f4cc0f4f99df12c1330b670a7b32c32b0b1a09c504bd1f"
+                ]
+              }
+            ]
+          },
+          {
+            "SectionName": "# HHS_HCC_CODING_ANALYSIS\n",
+            "ClinicalNarrative": [
+              {
+                "Text": "Rheumatoid Arthritis\n",
+                "Evidence": []
+              },
+              {
+                "Text": "Last assessed February 2026. Confirm if still present.\n",
+                "Evidence": [
+                  "Condition/d4459589b6e4d01a0eb71aafa5d7dd8250d42eb104dde008896739a01792d9a5",
+                  "Condition/f51369669bc6cfabd5f4cc0f4f99df12c1330b670a7b32c32b0b1a09c504bd1f"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "TotalCount": 1,
+  "GeneratedAt": "2026-02-27T05:29:55.689361",
+  "HccIncluded": true
+}

@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'API Gateway WebSocket API for ConnectHealth Streaming (provides wss:// support)'
+
+Parameters:
+  ALBEndpoint:
+    Type: String
+    Default: ''
+    Description: 'ALB endpoint URL (e.g., http://my-alb-123456.us-east-1.elb.amazonaws.com)'
+
+Resources:
+  # WebSocket API
+  WebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: connect-health-streaming-websocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: '$request.body.action'
+
+  # Integration with ALB via HTTP proxy
+  ALBIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Sub '${ALBEndpoint}/stream'
+      IntegrationMethod: POST
+
+  # $connect route
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: '$connect'
+      Target: !Sub 'integrations/${ALBIntegration}'
+
+  # $disconnect route  
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: '$disconnect'
+      Target: !Sub 'integrations/${ALBIntegration}'
+
+  # $default route for all messages
+  DefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: '$default'
+      Target: !Sub 'integrations/${ALBIntegration}'
+
+  # Deployment
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+      - DefaultRoute
+    Properties:
+      ApiId: !Ref WebSocketApi
+
+  # Stage
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage  # checkov:skip=CKV_AWS_95: Access logging not required for a demo/POC
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W46
+            reason: "API Gateway access logging not required for a demo/POC"
+    Properties:
+      ApiId: !Ref WebSocketApi
+      StageName: prod
+      DeploymentId: !Ref Deployment
+
+Outputs:
+  WebSocketURL:
+    Description: 'WebSocket URL (wss://)'
+    Value: !Sub 'wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/prod'

@@ -1,0 +1,299 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Care Manager workflow backend — ECS Fargate service running the Flask
+  proxy that invokes the Bedrock Agent on behalf of the care-manager
+  frontend. Depends on the care-manager Bedrock Agent stack (deploys
+  the AWS::Bedrock::Agent resource this backend invokes).
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC to deploy the ECS service into
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnets for ECS tasks and ALB (at least 2 in different AZs)
+
+  ECRRepositoryURI:
+    Type: String
+    Description: ECR repository URI for the care-manager-backend image
+
+  ImageTag:
+    Type: String
+    Default: latest
+
+  BedrockAgentId:
+    Type: String
+    Description: Bedrock Agent ID (from the care-manager Bedrock Agent stack)
+
+  BedrockAgentAliasId:
+    Type: String
+    Description: Bedrock Agent Alias ID (from the care-manager Bedrock Agent stack)
+
+  EnableTrace:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: Surface scrubbed Bedrock Agent trace data to the frontend
+
+  CorsOrigin:
+    Type: String
+    Default: '*'
+    Description: Allowed CORS origin (set to your CloudFront domain in production)
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 10
+
+Resources:
+
+  # ──────────────────────────────────────────────────────────────
+  # CloudWatch Log Group
+  # ──────────────────────────────────────────────────────────────
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/ecs/care-manager-backend-${Environment}'
+      RetentionInDays: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # ECS Cluster
+  # ──────────────────────────────────────────────────────────────
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub 'care-manager-backend-${Environment}'
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # ECS Task Execution Role (for image pull + log write)
+  # ──────────────────────────────────────────────────────────────
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'care-manager-backend-execution-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # ──────────────────────────────────────────────────────────────
+  # ECS Task Role (application permissions) — scoped to one Bedrock Agent
+  # ──────────────────────────────────────────────────────────────
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'care-manager-backend-task-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: BedrockAgentRuntimeInvoke
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeAgent
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent-alias/${BedrockAgentId}/${BedrockAgentAliasId}'
+
+  # ──────────────────────────────────────────────────────────────
+  # ECS Task Definition
+  # ──────────────────────────────────────────────────────────────
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub 'care-manager-backend-${Environment}'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: backend
+          Image: !Sub '${ECRRepositoryURI}:${ImageTag}'
+          Essential: true
+          PortMappings:
+            - ContainerPort: 5001
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: BEDROCK_AGENT_ID
+              Value: !Ref BedrockAgentId
+            - Name: BEDROCK_AGENT_ALIAS_ID
+              Value: !Ref BedrockAgentAliasId
+            - Name: ENABLE_TRACE
+              Value: !Ref EnableTrace
+            - Name: CORS_ORIGINS
+              Value: !Ref CorsOrigin
+            - Name: SERVER_PORT
+              Value: '5001'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: backend
+          HealthCheck:
+            Command: ['CMD-SHELL', 'python -c "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen(\"http://localhost:5001/healthz\", timeout=3).status == 200 else 1)"']
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 15
+
+  # ──────────────────────────────────────────────────────────────
+  # Security Group for the ECS service
+  # ──────────────────────────────────────────────────────────────
+  ServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for care-manager backend ECS service
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - Description: ALB → ECS task on port 5001
+          IpProtocol: tcp
+          FromPort: 5001
+          ToPort: 5001
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'care-manager-backend-svc-${Environment}'
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+
+  # ──────────────────────────────────────────────────────────────
+  # ALB + Target Group
+  # ──────────────────────────────────────────────────────────────
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ALB for care-manager backend
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - Description: HTTPS from CloudFront (open; CloudFront-prefix-list restriction recommended for production)
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub 'care-manager-backend-alb-${Environment}'
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub 'care-mgr-be-${Environment}'
+      Type: application
+      Scheme: internet-facing
+      SecurityGroups: [!Ref ALBSecurityGroup]
+      Subnets: !Ref SubnetIds
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub 'care-mgr-be-tg-${Environment}'
+      Port: 5001
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      HealthCheckPath: /healthz
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+
+  # NOTE: This sample creates an HTTP listener for simplicity. Production
+  # deployments MUST use an HTTPS listener with an ACM certificate and
+  # redirect HTTP→HTTPS.
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  # ──────────────────────────────────────────────────────────────
+  # ECS Service
+  # ──────────────────────────────────────────────────────────────
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: Listener
+    Properties:
+      ServiceName: !Sub 'care-manager-backend-${Environment}'
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref TaskDefinition
+      LaunchType: FARGATE
+      DesiredCount: !Ref DesiredCount
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups: [!Ref ServiceSecurityGroup]
+          Subnets: !Ref SubnetIds
+      LoadBalancers:
+        - ContainerName: backend
+          ContainerPort: 5001
+          TargetGroupArn: !Ref TargetGroup
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  ServiceName:
+    Description: ECS service name
+    Value: !Ref ECSService
+    Export:
+      Name: !Sub '${AWS::StackName}-ServiceName'
+
+  LoadBalancerDNS:
+    Description: ALB DNS name — point CloudFront / frontend BACKEND_URL at this
+    Value: !GetAtt LoadBalancer.DNSName
+    Export:
+      Name: !Sub '${AWS::StackName}-LoadBalancerDNS'
+
+  ECSClusterName:
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub '${AWS::StackName}-ECSClusterName'
+
+  LogGroupName:
+    Value: !Ref LogGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-LogGroupName'

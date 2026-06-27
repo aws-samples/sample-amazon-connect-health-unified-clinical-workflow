@@ -1,0 +1,2955 @@
+<!-- Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved. -->
+<!-- SPDX-License-Identifier: MIT-0 -->
+<!-- nosemgrep: insecure-document-method, html-in-template-string — innerHTML renders trusted AWS API data (Bedrock, Patient Insights, S3 streaming outputs), not user input. LLM output is sanitized via sanitizeLLMText() before rendering. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Health - Pre-Visit Prep</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+            background: #fafafa;
+            color: #374151;
+            min-height: 100vh;
+            line-height: 1.6;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Patient Header */
+        .patient-header-compact {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .patient-name-large {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .patient-meta {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .visit-time {
+            font-size: 13px;
+            color: #8b5cf6;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        /* Card Styles */
+        .visit-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 
+                0 2px 12px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .visit-card:last-child {
+            margin-bottom: 60px;
+        }
+
+        .visit-card:hover {
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+        }
+
+        .visit-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 20px 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .visit-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            color: #8b5cf6;
+            opacity: 0.8;
+        }
+
+        .visit-card-body {
+            padding: 20px;
+        }
+
+        /* Narrative */
+        .visit-summary {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.85;
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.04) 0%, 
+                rgba(99, 102, 241, 0.04) 50%,
+                rgba(59, 130, 246, 0.04) 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+            box-shadow: 
+                0 2px 12px rgba(139, 92, 246, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .visit-summary::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
+            border-radius: 16px 0 0 16px;
+            opacity: 0.7;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .subsection-header {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin: 20px 0 12px 0;
+        }
+
+        /* Metric Cards - Horizontal Layout */
+        .metric-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px 18px;
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.03),
+                0 1px 3px rgba(0, 0, 0, 0.02),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .metric-card:hover {
+            box-shadow: 
+                0 6px 16px rgba(0, 0, 0, 0.06),
+                0 3px 8px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            cursor: pointer;
+        }
+
+        .metric-card:hover::before {
+            opacity: 0;
+        }
+
+        .metric-card:hover::after {
+            opacity: 0;
+        }
+
+        /* Since Last Visit — block cards from Bedrock output */
+        .since-block-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .since-block-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px 16px;
+            transition: box-shadow 0.2s;
+        }
+        .since-block-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .since-block-header {
+            font-weight: 600;
+            font-size: 13.5px;
+            color: #1f2937;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .since-block-category {
+            font-weight: 600;
+        }
+
+        .since-block-date {
+            font-weight: 400;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        .since-block-item {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #4b5563;
+            line-height: 1.55;
+        }
+        .since-block-item .bullet {
+            color: #9ca3af;
+            flex-shrink: 0;
+            margin-top: 1px;
+            font-size: 10px;
+        }
+
+        /* Evidence text in Since Last Visit and Visit Priorities — no visual cue, evidence shown inline */
+        .since-block-item .evidence-linked-text,
+        .priority-item .evidence-linked-text {
+            cursor: default;
+            background: none;
+        }
+        .since-block-item .evidence-linked-text:hover,
+        .priority-item .evidence-linked-text:hover {
+            background: none;
+        }
+
+        .since-block-footer {
+            margin-top: 12px;
+        }
+
+        .view-evidence-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #8b5cf6;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .view-evidence-link:hover {
+            color: #7c3aed;
+        }
+
+        .view-evidence-link svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .since-evidence-section {
+            display: none;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+        .since-evidence-section.expanded {
+            display: block;
+        }
+        .since-evidence-header {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+        .since-evidence-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            padding: 5px 0;
+            font-size: 13px;
+            color: #4b5563;
+            line-height: 1.4;
+        }
+        .since-evidence-item svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: #8b5cf6;
+        }
+        .since-evidence-item .evidence-loading {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        .since-block-empty {
+            font-size: 13px;
+            color: #8896a4;
+            padding: 8px 0;
+        }
+
+        .metric-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .metric-label-value {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .metric-value.warning {
+            color: #f59e0b;
+            text-shadow: 0 2px 12px rgba(245, 158, 11, 0.12);
+        }
+
+        .metric-value.danger {
+            color: #ef4444;
+            text-shadow: 0 2px 12px rgba(239, 68, 68, 0.12);
+        }
+
+        .metric-value.neutral {
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        .metric-target {
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: 400;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* Priority Items */
+        .priority-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .priority-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .priority-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            border-radius: 12px 0 0 12px;
+            opacity: 0.4;
+        }
+
+        .priority-item.high::before {
+            background: #ef4444;
+        }
+
+        .priority-item.moderate::before {
+            background: #f59e0b;
+        }
+
+        .priority-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            transform: translateY(-1px);
+            border-color: rgba(139, 92, 246, 0.1);
+        }
+
+        .priority-item:hover::before {
+            opacity: 0.6;
+        }
+
+        .priority-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .priority-item.high .priority-number {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
+        }
+
+        .priority-item.moderate .priority-number {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #d97706;
+        }
+
+        .priority-content {
+            flex: 1;
+        }
+
+        .priority-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 3px;
+            line-height: 1.3;
+        }
+
+        .priority-description {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.4;
+            margin-bottom: 5px;
+        }
+
+        .priority-badge {
+            display: inline-flex;
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .priority-badge.diagnosis {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+        }
+
+        .priority-badge.guideline {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        /* Recommendation List */
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0 0 0;
+        }
+
+        .recommendation-list li {
+            padding: 10px 12px 10px 32px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
+            border-radius: 8px;
+            border-left: 3px solid #8b5cf6;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .recommendation-list li:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.06) 100%);
+            transform: translateX(4px);
+        }
+
+        .recommendation-list li::before {
+            content: '→';
+            position: absolute;
+            left: 12px;
+            color: #8b5cf6;
+            font-weight: 600;
+        }
+
+        /* Compact Badge Rows */
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .condition-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.2s ease;
+        }
+
+        .condition-badge:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(124, 58, 237, 0.12) 100%);
+            transform: translateY(-1px);
+        }
+
+        .condition-badge.recapture {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .hcc-mini {
+            font-size: 10px;
+            font-weight: 600;
+            color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.02em;
+        }
+
+        .warning-mini {
+            font-size: 11px;
+            color: #f59e0b;
+        }
+
+        .med-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 400;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+
+        .med-badge:hover {
+            background: rgba(139, 92, 246, 0.02);
+            border-color: rgba(139, 92, 246, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Checklist */
+        .checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .checklist-item:hover {
+            background: rgba(139, 92, 246, 0.02);
+            border-color: rgba(139, 92, 246, 0.15);
+            transform: translateX(2px);
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checklist-item:hover .checkbox {
+            border-color: #8b5cf6;
+        }
+        
+        .checklist-item.checked .checkbox {
+            background: #8b5cf6;
+            border-color: #8b5cf6;
+        }
+        
+        .checklist-item.checked .checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .checklist-item.checked .checklist-text {
+            color: #9ca3af;
+        }
+
+        .checklist-text {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        /* Expandable Evidence Styles */
+        .metric-card.expandable {
+            cursor: pointer;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .metric-card.expandable .metric-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .evidence-download-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .evidence-download-trigger:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .evidence-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #8b5cf6;
+            font-weight: 500;
+            padding: 4px 8px;
+            background: rgba(139, 92, 246, 0.08);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .evidence-indicator svg {
+            width: 12px;
+            height: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card.expandable.expanded .evidence-indicator svg {
+            transform: rotate(180deg);
+        }
+
+        .metric-card.expandable:hover .evidence-indicator {
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        /* Evidence-linked text in Bedrock-synthesized content — subtle background */
+        .evidence-linked-text {
+            background: rgba(139, 92, 246, 0.08);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .evidence-linked-text:hover {
+            background: rgba(139, 92, 246, 0.16);
+        }
+
+        /* Evidence popover */
+        .evidence-popover {
+            position: absolute;
+            z-index: 1000;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            width: 280px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .evidence-popover-header {
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6366f1;
+            border-bottom: 1px solid #f1f5f9;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .evidence-popover-close {
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            color: #9ca3af;
+            padding: 0 2px;
+            transition: color 0.15s;
+        }
+        .evidence-popover-close:hover {
+            color: #4b5563;
+        }
+        .evidence-popover-body {
+            padding: 10px 14px;
+        }
+        .evidence-popover-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .evidence-popover-item:last-child {
+            border-bottom: none;
+        }
+        .evidence-popover-type {
+            font-size: 10px;
+            font-weight: 600;
+            color: #8b5cf6;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+        .evidence-popover-detail {
+            font-size: 13px;
+            color: #1f2937;
+            line-height: 1.3;
+        }
+        .evidence-popover-date {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .evidence-popover-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #6366f1;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .evidence-popover-download:hover {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .evidence-section {
+            display: none;
+            width: 100%;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .metric-card.expandable.expanded .evidence-section {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .evidence-header {
+            font-size: 10px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .evidence-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .evidence-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.04) 0%, rgba(99, 102, 241, 0.04) 100%);
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            font-size: 12px;
+            color: #4b5563;
+            transition: all 0.2s ease;
+        }
+
+        .evidence-item:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        .evidence-icon {
+            width: 16px;
+            height: 16px;
+            color: #8b5cf6;
+            flex-shrink: 0;
+        }
+
+        .evidence-type {
+            font-weight: 600;
+            color: #6366f1;
+            min-width: 80px;
+        }
+
+        .evidence-ref {
+            color: #6b7280;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 2px 6px;
+            border-radius: 4px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Patient Header -->
+        <div class="patient-header-compact">
+            <span class="patient-name-large" id="patientNameHeader">Diabetic follow-up</span>
+            <span class="visit-time">Today 9:00 AM</span>
+        </div>
+
+        <!-- SITUATION Card -->
+        <div class="visit-card" id="situationCard">
+            <div class="visit-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                </svg>
+                <span class="visit-title">Patient Story</span>
+            </div>
+            <div style="font-size:11px;color:#6b7280;padding:8px 12px;background:#fef3c7;border-radius:6px;margin:0 12px 8px;">
+                ⚠️ AI-generated content for clinical reference only. All information must be verified by healthcare professionals before use in patient care.
+            </div>
+            <div class="visit-card-body">
+                <div class="visit-summary" id="situationSummary">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:#8896a4;">
+                        <div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#6366f1;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                        Loading patient story...
+                    </div>
+                </div>
+
+                <div class="subsection-header" id="sinceLastVisitHeader" style="display:none;">Since last visit</div>
+                <div class="since-block-cards" id="sinceLastVisitBlocks" style="display:none;">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ASSESSMENT Card -->
+        <div class="visit-card" id="assessmentCard">
+            <div class="visit-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+                <span class="visit-title">Visit Priorities</span>
+            </div>
+            <div class="visit-card-body" id="assessmentBody">
+                <div class="subsection-header" id="mustAddressHeader" style="display:none;">TODAY'S VISIT - MUST ADDRESS</div>
+                <div class="priority-list" id="priorityListHigh">
+                </div>
+
+                <div class="subsection-header" id="ongoingHeader" style="display:none;">ONGOING MANAGEMENT - DISCUSS & ADJUST</div>
+                <div class="priority-list" id="priorityListOngoing">
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- DOMPurify - sanitize any user-editable or API-sourced HTML content -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha512-H+rglffZ6f5gF7UJgvH4Naa+fGCgjrHKMgoFOGmcPTRwR6oILo5R+gtzNrpDp7iMV3udbymBVjkeZGNz1Em4rQ==" crossorigin="anonymous"></script>
+
+    <script> // nosemgrep: insecure-document-method
+        // =================================================================
+        // Sanitize LLM/Bedrock output before rendering
+        // LLMs are untrusted components — their output may contain injected HTML.
+        // This strips HTML tags while preserving our custom [REFn] evidence markers.
+        // =================================================================
+        function sanitizeLLMText(text) {
+            if (!text) return '';
+            if (typeof DOMPurify !== 'undefined') {
+                // Allow only our evidence markers through by temporarily replacing them
+                return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], KEEP_CONTENT: true });
+            }
+            // Fallback: strip all HTML tags
+            return text.replace(/<[^>]*>/g, '');
+        }
+
+        // =================================================================
+        // DEMO MODE + AUTH — Fetch Interceptor (iframe context)
+        // Reads demo mode state and auth token from parent window.
+        // =================================================================
+        (function() {
+            const _originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+                try {
+                    if (typeof url === 'string' && url.includes('/api/') && window.parent) {
+                        options = options || {};
+                        options.headers = options.headers || {};
+                        // Demo mode header
+                        if (window.parent.DEMO_MODE) {
+                            if (options.headers instanceof Headers) {
+                                options.headers.set('X-Demo-Mode', 'true');
+                            } else {
+                                options.headers['X-Demo-Mode'] = 'true';
+                            }
+                        }
+                        // Auth token from parent
+                        if (window.parent.CognitoAuth && window.parent.CognitoAuth.getToken()) {
+                            const token = window.parent.CognitoAuth.getToken();
+                            if (options.headers instanceof Headers) {
+                                options.headers.set('Authorization', 'Bearer ' + token);
+                            } else {
+                                options.headers['Authorization'] = 'Bearer ' + token;
+                            }
+                        }
+                    }
+                } catch(e) { /* cross-origin — ignore */ }
+                return _originalFetch.call(this, url, options);
+            };
+        })();
+
+        // =================================================================
+        // RECEIVE DATA FROM PARENT WINDOW
+        // =================================================================
+        
+        window.addEventListener('message', (event) => {
+            // In production, validate event.origin
+            // if (event.origin !== 'https://your-domain.com') return;
+            
+            if (event.data.type === 'update-previsit') {
+                renderPreVisitData(event.data.data);
+            }
+            
+            // Handle medical codes loading state from parent
+            if (event.data.type === 'codes-loading') {
+                // Hide pre-visit content and show loading spinner in codes panel
+                const visitCards = document.querySelectorAll('.visit-card');
+                visitCards.forEach(card => { card.style.display = 'none'; });
+                const patientHeader = document.querySelector('.patient-header-compact');
+                if (patientHeader) patientHeader.style.display = 'none';
+                
+                let panel = document.getElementById('medicalCodesPanel');
+                if (!panel) {
+                    panel = document.createElement('div');
+                    panel.id = 'medicalCodesPanel';
+                    panel.style.cssText = 'background:white;border-radius:16px;padding:0;box-shadow:0 2px 12px rgba(0,0,0,0.04);border:1px solid #e5e7eb;margin-bottom:12px;overflow:hidden;';
+                    const container = document.querySelector('.container');
+                    if (container) container.insertBefore(panel, container.firstChild);
+                }
+                panel.innerHTML = `
+                    <div style="padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span style="font-size:14px;font-weight:600;color:#1e293b;">Medical Codes</span></div>
+                    <div style="padding:24px;display:flex;align-items:center;justify-content:center;gap:8px;color:#8896a4;font-size:13px;">
+                        <div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                        Re-analyzing clinical text...
+                    </div>`;
+                panel.style.display = 'block';
+            }
+            
+            // Handle medical codes update from parent
+            if (event.data.type === 'medical-codes-update') {
+                showMedicalCodesPanel(event.data.codes);
+            }
+            
+            // Handle highlight code request from parent
+            if (event.data.type === 'highlight-code') {
+                highlightCodeInPanel(event.data.codeId);
+            }
+            
+            // Handle clear highlights request from parent
+            if (event.data.type === 'clear-code-highlights') {
+                clearCodeHighlights();
+            }
+        });
+        
+        // =================================================================
+        // MEDICAL CODES PANEL
+        // =================================================================
+        
+        function showMedicalCodesPanel(codes) {
+            // Hide all pre-visit content (Patient Story, Visit Priorities, etc.)
+            const visitCards = document.querySelectorAll('.visit-card');
+            visitCards.forEach(card => { card.style.display = 'none'; });
+            
+            // Hide patient header
+            const patientHeader = document.querySelector('.patient-header-compact');
+            if (patientHeader) patientHeader.style.display = 'none';
+            
+            // Create or get the codes panel
+            let panel = document.getElementById('medicalCodesPanel');
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'medicalCodesPanel';
+                panel.style.cssText = 'background:white;border-radius:16px;padding:0;box-shadow:0 2px 12px rgba(0,0,0,0.04);border:1px solid #e5e7eb;margin-bottom:12px;overflow:hidden;';
+                const container = document.querySelector('.container');
+                if (container) container.insertBefore(panel, container.firstChild);
+            }
+            
+            if (!codes || codes.length === 0) {
+                // Show panel with "No codes detected" headers
+                panel.innerHTML = `
+                    <div style="padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span style="font-size:14px;font-weight:600;color:#1e293b;">Medical Codes</span></div>
+                    <div style="padding:10px 14px;">
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f1f5f9;">ICD-10 Diagnosis Codes</div>
+                        <div style="padding:10px 0;text-align:center;color:#9ca3af;font-size:13px;">No diagnosis codes detected</div>
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;padding:10px 0 4px;margin-top:8px;border-bottom:1px solid #f1f5f9;">CPT Procedure Codes</div>
+                        <div style="padding:10px 0;text-align:center;color:#9ca3af;font-size:13px;">No procedure codes detected</div>
+                    </div>`;
+                panel.style.display = 'block';
+                return;
+            }
+
+            // Deduplicate codes by name
+            const seen = new Set();
+            codes = codes.filter(code => {
+                if (seen.has(code.name)) return false;
+                seen.add(code.name);
+                return true;
+            });
+
+            // Fix doubled descriptions (API sometimes returns "text text") and truncate long ones
+            codes = codes.map(code => {
+                let desc = code.description || '';
+                const half = Math.floor(desc.length / 2);
+                if (desc.length > 10 && desc.substring(0, half).trim() === desc.substring(half).trim()) {
+                    desc = desc.substring(0, half).trim();
+                }
+                // Truncate long CPT descriptions
+                if (desc.length > 100) {
+                    const cutPoints = ['. ', '; ', ', which ', ' This ', ' When '];
+                    let cutAt = desc.length;
+                    cutPoints.forEach(cp => {
+                        const idx = desc.indexOf(cp);
+                        if (idx > 20 && idx < cutAt) cutAt = idx;
+                    });
+                    if (cutAt < desc.length) desc = desc.substring(0, cutAt);
+                }
+                return { ...code, description: desc };
+            });
+            
+            const colors = { ICD10: '#8b5cf6', CPT: '#10b981' };
+            let html = '<div style="padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span style="font-size:14px;font-weight:600;color:#1e293b;">Medical Codes</span></div>';
+            html += '<div style="padding:10px 14px;">';
+            
+            // Split into primary (>=60%) and low confidence (<60%)
+            const primaryCodes = codes.filter(c => {
+                const conf = typeof c.confidence === 'number' ? c.confidence : parseFloat(c.confidence) / 100;
+                return conf >= 0.60;
+            });
+            const lowConfCodes = codes.filter(c => {
+                const conf = typeof c.confidence === 'number' ? c.confidence : parseFloat(c.confidence) / 100;
+                return conf < 0.60;
+            });
+
+            function renderCodeItem(code, checked) {
+                const color = colors[code.system] || '#6366f1';
+                const confidenceRaw = typeof code.confidence === 'number' ? code.confidence : parseFloat(code.confidence) / 100;
+                const confidence = Math.round(confidenceRaw * 100);
+                let confColor = '#10b981';
+                if (confidence < 50) confColor = '#ef4444';
+                else if (confidence < 80) confColor = '#f59e0b';
+                const checkedAttr = checked ? 'checked' : '';
+                const opacityStyle = checked ? '' : 'opacity:0.55;';
+                return `<div class="iframe-code-item" data-code="${escapeHtml(code.name)}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 8px;border-bottom:1px solid #f8fafc;cursor:pointer;border-radius:6px;transition:all 0.2s;${opacityStyle}">
+                    <label style="display:flex;align-items:center;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="event.stopPropagation()">
+                        <input type="checkbox" ${checkedAttr} onchange="toggleIframeCode(this,'${escapeHtml(code.name)}')" style="display:none;">
+                        <span style="width:16px;height:16px;border:2px solid ${checked ? '#8b5cf6' : '#d1d5db'};border-radius:4px;display:flex;align-items:center;justify-content:center;background:${checked ? '#8b5cf6' : 'white'};transition:all 0.15s;font-size:10px;color:white;font-weight:700;">${checked ? '✓' : ''}</span>
+                    </label>
+                    <span style="display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;color:white;background:${color};white-space:nowrap;flex-shrink:0;margin-top:2px;" onclick="onCodeClicked('${escapeHtml(code.name)}')">${escapeHtml(code.name)}</span>
+                    <div style="flex:1;" onclick="onCodeClicked('${escapeHtml(code.name)}')">
+                        <div style="font-size:13px;color:#374151;line-height:1.4;">${escapeHtml(code.description || '')}</div>
+                        ${confidence ? `<div style="font-size:11px;color:${confColor};font-weight:600;margin-top:2px;">${confidence}%</div>` : ''}
+                    </div>
+                </div>`; 
+            }
+
+            // Separate ICD10 and CPT
+            const icdCodes = codes.filter(c => { const s = (c.system||'').toUpperCase(); return s === 'ICD10' || s === 'ICD-10' || (c.name && c.name.match(/^[A-Z]\d/)); });
+            const cptCodes = codes.filter(c => { const s = (c.system||'').toUpperCase(); return s === 'CPT' || (c.name && c.name.match(/^\d{5}$/)); });
+
+            // ICD-10 section
+            html += '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f1f5f9;">ICD-10 Diagnosis Codes</div>';
+            if (icdCodes.length === 0) {
+                html += '<div style="padding:10px 0;text-align:center;color:#9ca3af;font-size:13px;">No diagnosis codes detected</div>';
+            } else {
+                const icdPrimary = icdCodes.filter(c => { const conf = typeof c.confidence === 'number' ? c.confidence : parseFloat(c.confidence)/100; return conf >= 0.60; });
+                const icdLow = icdCodes.filter(c => { const conf = typeof c.confidence === 'number' ? c.confidence : parseFloat(c.confidence)/100; return conf < 0.60; });
+                icdPrimary.forEach(code => { html += renderCodeItem(code, true); });
+                if (icdLow.length > 0) {
+                    html += `<div style="margin-top:6px;"><div onclick="var l=this.nextElementSibling;l.style.display=l.style.display==='none'?'block':'none';" style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;cursor:pointer;border-radius:6px;background:#f8fafc;font-size:12px;font-weight:600;color:#64748b;"><span>Other ICD-10 (${icdLow.length})</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,4 6,8 10,4"/></svg></div><div style="display:none;">`;
+                    icdLow.forEach(code => { html += renderCodeItem(code, false); });
+                    html += '</div></div>';
+                }
+            }
+
+            // CPT section
+            html += '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;padding:10px 0 4px;margin-top:8px;border-bottom:1px solid #f1f5f9;">CPT Procedure Codes</div>';
+            if (cptCodes.length === 0) {
+                html += '<div style="padding:10px 0;text-align:center;color:#9ca3af;font-size:13px;">No procedure codes detected</div>';
+            } else {
+                const cptPrimary = cptCodes.filter(c => { const conf = typeof c.confidence === 'number' ? c.confidence : parseFloat(c.confidence)/100; return conf >= 0.60; });
+                const cptLow = cptCodes.filter(c => { const conf = typeof c.confidence === 'number' ? c.confidence : parseFloat(c.confidence)/100; return conf < 0.60; });
+                cptPrimary.forEach(code => { html += renderCodeItem(code, true); });
+                if (cptLow.length > 0) {
+                    html += `<div style="margin-top:6px;"><div onclick="var l=this.nextElementSibling;l.style.display=l.style.display==='none'?'block':'none';" style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;cursor:pointer;border-radius:6px;background:#f8fafc;font-size:12px;font-weight:600;color:#64748b;"><span>Other CPT (${cptLow.length})</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,4 6,8 10,4"/></svg></div><div style="display:none;">`;
+                    cptLow.forEach(code => { html += renderCodeItem(code, false); });
+                    html += '</div></div>';
+                }
+            }
+            
+            html += '</div>';
+            panel.innerHTML = html;
+            panel.style.display = 'block';
+        }
+        
+        function toggleIframeCode(checkbox, codeName) {
+            const item = checkbox.closest('.iframe-code-item');
+            if (item) {
+                if (checkbox.checked) {
+                    item.style.opacity = '';
+                    const span = checkbox.nextElementSibling;
+                    if (span) { span.style.background = '#8b5cf6'; span.style.borderColor = '#8b5cf6'; span.innerHTML = '✓'; }
+                } else {
+                    item.style.opacity = '0.55';
+                    const span = checkbox.nextElementSibling;
+                    if (span) { span.style.background = 'white'; span.style.borderColor = '#d1d5db'; span.innerHTML = ''; }
+                }
+            }
+        }
+
+        function onCodeClicked(codeId) {
+            // Toggle highlight on this code
+            const items = document.querySelectorAll('.iframe-code-item');
+            const clickedItem = document.querySelector(`.iframe-code-item[data-code="${codeId}"]`);
+            const wasHighlighted = clickedItem && clickedItem.style.background.includes('rgba(139');
+            
+            // Clear all highlights
+            items.forEach(item => { item.style.background = ''; });
+            
+            if (!wasHighlighted && clickedItem) {
+                clickedItem.style.background = 'rgba(139, 92, 246, 0.1)';
+            }
+            
+            // Notify parent
+            window.parent.postMessage({
+                type: wasHighlighted ? 'clear-code-highlights' : 'code-clicked',
+                codeId: codeId
+            }, '*');
+        }
+        
+        function highlightCodeInPanel(codeId) {
+            const items = document.querySelectorAll('.iframe-code-item');
+            items.forEach(item => { item.style.background = ''; });
+            const target = document.querySelector(`.iframe-code-item[data-code="${codeId}"]`);
+            if (target) {
+                target.style.background = 'rgba(139, 92, 246, 0.1)';
+                target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        
+        function clearCodeHighlights() {
+            const items = document.querySelectorAll('.iframe-code-item');
+            items.forEach(item => { item.style.background = ''; });
+        }
+        
+        // Log when iframe is ready
+        console.log('IFRAME: Pre-visit iframe ready');
+
+        // =================================================================
+        // RENDER TRANSFORMED DATA
+        // =================================================================
+        
+        function renderPreVisitData(data) {
+            const patient = data.patient;
+            
+            // Clear all previous patient content immediately on any new data
+            if (data.loading && data.attempt <= 1) {
+                clearPlaceholderContent();
+            }
+            
+            // Update patient header immediately
+            const patientNameEl = document.getElementById('patientNameHeader');
+            if (patientNameEl && patient) {
+                patientNameEl.textContent = patient.name + ' - Follow-up Visit';
+            }
+            
+            // Update situation summary
+            const summaryEl = document.getElementById('situationSummary');
+            
+            // If loading, show loading state with progress
+            if (data.loading) {
+                if (summaryEl) {
+                    const attempt = data.attempt || 0;
+                    const status = data.status || 'STARTING';
+                    const elapsed = attempt * 5; // 5 seconds per poll
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                    
+                    summaryEl.innerHTML = `
+                        <div style="color: #8b5cf6; font-size: 15px;">
+                            <div style="margin-bottom: 8px;">⏳ <strong>Loading patient insights from AWS...</strong></div>
+                            <div style="font-size: 13px; color: #6b7280;">
+                                Status: <span style="color: #f59e0b; font-weight: 500;">${status}</span> 
+                                &nbsp;•&nbsp; Elapsed: ${timeStr}
+                                ${attempt > 0 ? `&nbsp;•&nbsp; Poll #${attempt}` : ''}
+                            </div>
+                            <div style="font-size: 12px; color: #9ca3af; margin-top: 6px;">
+                                This typically takes 4-5 minutes for the first request...
+                            </div>
+                        </div>
+                    `;
+                    console.log('Loading insights - attempt:', attempt, 'status:', status);
+                }
+                return;
+            }
+            
+            const insights = data.insights;
+            
+            // Parse and display insights sections
+            // AWS returns: { PatientSummaries: [{ PatientSummary: { Sections: [...] } }] }
+            let sections = [];
+            if (insights) {
+                if (insights.PatientSummaries && insights.PatientSummaries[0]) {
+                    sections = insights.PatientSummaries[0].PatientSummary?.Sections || [];
+                } else if (insights.PatientSummary && insights.PatientSummary.Sections) {
+                    sections = insights.PatientSummary.Sections;
+                }
+            }
+            
+            
+            // Clear hardcoded placeholder content before populating with real data
+            clearPlaceholderContent();
+            
+            if (sections.length > 0) {
+                // Collect ALL ClinicalNarrative items from ALL sections first
+                const allClinicalNarrative = [];
+                const allSectionTexts = {};
+                let overviewNarrative = '';
+                let overviewEvidenceMap = {};
+                
+                sections.forEach(section => {
+                    const sectionName = (section.SectionName || '').trim();
+                    const clinicalNarrative = section.ClinicalNarrative || [];
+                    const narrativeText = clinicalNarrative.map(n => n.Text).join('');
+                    
+                    // Collect ALL narrative items with evidence from ALL sections
+                    clinicalNarrative.forEach(item => {
+                        if (item.Evidence && item.Evidence.length > 0) {
+                            allClinicalNarrative.push(item);
+                        }
+                    });
+                    
+                    if (sectionName.includes('PATIENT_AND_ENCOUNTER_OVERVIEW')) {
+                        overviewNarrative = narrativeText;
+                        overviewEvidenceMap = extractEvidenceFromNarrative(clinicalNarrative);
+                    } else if (sectionName.includes('SINCE_LAST_VISIT')) {
+                        allSectionTexts.sinceLastVisit = narrativeText;
+                        updateSinceLastVisit(narrativeText);
+                    } else if (sectionName.includes('TRENDS')) {
+                        allSectionTexts.trends = narrativeText;
+                        updateTrends(narrativeText);
+                    } else if (sectionName.includes('CMS_HCC_CODING_ANALYSIS')) {
+                        allSectionTexts.cmsHcc = narrativeText;
+                    } else if (sectionName.includes('HHS_HCC_CODING_ANALYSIS')) {
+                        allSectionTexts.hhsHcc = narrativeText;
+                    }
+                });
+                
+                // Now call parseAndDisplayOverview with ALL evidence items collected
+                if (overviewNarrative) {
+                    parseAndDisplayOverview(overviewNarrative, patient, overviewEvidenceMap, allClinicalNarrative, allSectionTexts);
+                }
+                
+                showNotification('Pre-visit insights loaded for ' + (patient ? patient.name : 'patient'));
+            } else {
+                const summaryEl = document.getElementById('situationSummary');
+                if (summaryEl) {
+                    summaryEl.innerHTML = '<em style="color: #ef4444;">No insights data found in AWS response</em>';
+                }
+            }
+        }
+        
+        // Clear hardcoded placeholder content before populating with real data
+        function clearPlaceholderContent() {
+            // Clear Visit Priorities (Assessment) section
+            const priorityListHigh = document.getElementById('priorityListHigh');
+            const priorityListOngoing = document.getElementById('priorityListOngoing');
+            if (priorityListHigh) priorityListHigh.innerHTML = '';
+            if (priorityListOngoing) priorityListOngoing.innerHTML = '';
+            // Hide priority headers until content loads
+            const mustAddressHeader = document.getElementById('mustAddressHeader');
+            const ongoingHeader = document.getElementById('ongoingHeader');
+            if (mustAddressHeader) mustAddressHeader.style.display = 'none';
+            if (ongoingHeader) ongoingHeader.style.display = 'none';
+            
+            // Clear Visit Checklist
+            const visitChecklist = document.getElementById('visitChecklist');
+            if (visitChecklist) visitChecklist.innerHTML = '';
+            
+            // Clear Background section badges
+            const conditionBadges = document.getElementById('conditionBadges');
+            const medicationBadges = document.getElementById('medicationBadges');
+            if (conditionBadges) conditionBadges.innerHTML = '<span class="condition-badge">Loading...</span>';
+            if (medicationBadges) medicationBadges.innerHTML = '<span class="med-badge">Loading...</span>';
+            
+            // Hide Since Last Visit until content loads
+            const sinceLastVisitHeader = document.getElementById('sinceLastVisitHeader');
+            const sinceBlocks = document.getElementById('sinceLastVisitBlocks');
+            if (sinceLastVisitHeader) { sinceLastVisitHeader.style.display = 'none'; sinceLastVisitHeader.textContent = 'Since last visit'; }
+            if (sinceBlocks) { sinceBlocks.style.display = 'none'; sinceBlocks.innerHTML = ''; }
+            
+            // Clear Patient Story
+            const situationSummary = document.getElementById('situationSummary');
+            if (situationSummary) situationSummary.innerHTML = '';
+        }
+        
+        // Parse the PATIENT_AND_ENCOUNTER_OVERVIEW section and distribute to cards
+        function parseAndDisplayOverview(narrative, patient, evidenceMap = {}, clinicalNarrative = [], extraSections = {}) {
+            // Split by markdown headers (## Header)
+            const sections = {};
+            let currentSection = 'overview';
+            
+            const lines = narrative.split('\n');
+            lines.forEach(line => {
+                if (line.startsWith('## ')) {
+                    currentSection = line.replace('## ', '').trim().toLowerCase();
+                    sections[currentSection] = '';
+                } else {
+                    if (!sections[currentSection]) sections[currentSection] = '';
+                    sections[currentSection] += line + '\n';
+                }
+            });
+            
+            // Update SITUATION card with Overview (immediate, before Bedrock call)
+            const summaryEl = document.getElementById('situationSummary');
+            if (summaryEl) {
+                const overview = sections['overview'] || '';
+                const age = patient?.age || '';
+                const gender = patient?.gender || '';
+                
+                let summaryText = overview.trim();
+                if (!summaryText && patient) {
+                    summaryText = `${patient.name} presenting for follow-up visit.`;
+                }
+                
+                // Show loading while Bedrock synthesizes narrative
+                summaryEl.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:#8896a4;">
+                        <div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#6366f1;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                        Synthesizing patient narrative...
+                    </div>
+                `;
+                // NOTE: narrative is now generated by synthesizePrevisitContent() unified call
+            }
+            
+            // Extract and update "Since last visit" date from overview
+            const overviewText = sections['overview'] || '';
+            const lastVisitMatch = overviewText.match(/last visit was on\s*(\d{2}\/\d{2}\/\d{4})/i);
+            const sinceLastVisitHeader = document.getElementById('sinceLastVisitHeader');
+            if (sinceLastVisitHeader) {
+                if (lastVisitMatch) {
+                    // Format date nicely (MM/DD/YYYY -> Month YYYY)
+                    const dateParts = lastVisitMatch[1].split('/');
+                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                   'July', 'August', 'September', 'October', 'November', 'December'];
+                    const monthName = months[parseInt(dateParts[0]) - 1] || dateParts[0];
+                    const year = dateParts[2];
+                    sinceLastVisitHeader.textContent = `Since last visit (${monthName} ${year})`;
+                } else {
+                    sinceLastVisitHeader.textContent = 'Since last visit';
+                }
+            }
+            
+            // Update BACKGROUND card - Conditions
+            const conditionBadges = document.getElementById('conditionBadges');
+            if (conditionBadges) {
+                const conditions = sections['chronic and active conditions'] || '';
+                if (conditions.includes('No chronic') || conditions.trim() === '' || conditions.includes('No chronic or active')) {
+                    conditionBadges.innerHTML = '<span class="condition-badge">No chronic conditions documented</span>';
+                } else {
+                    // Parse bullet points
+                    const items = conditions.split('*').filter(s => s.trim());
+                    conditionBadges.innerHTML = items.map(item => 
+                        `<span class="condition-badge">${item.trim()}</span>`
+                    ).join('');
+                }
+            }
+            
+            // Update BACKGROUND card - Medications
+            const medBadges = document.getElementById('medicationBadges');
+            if (medBadges) {
+                const meds = sections['current medications'] || '';
+                const medItems = meds.split('*').filter(s => s.trim());
+                if (medItems.length > 0) {
+                    medBadges.innerHTML = medItems.map(item => 
+                        `<span class="med-badge">${item.trim().replace(/\n/g, ' ')}</span>`
+                    ).join('');
+                } else {
+                    medBadges.innerHTML = '<span class="med-badge">No current medications</span>';
+                }
+            }
+            
+            // (Metric cards removed — Since Last Visit is now rendered from Bedrock output)
+            const resultsText = sections['recent results'] || '';
+            
+            // Generate all pre-visit content via single Bedrock call
+            // Merge overview sections with sinceLastVisit and trends from other API sections
+            const mergedSections = { ...sections, ...extraSections };
+            synthesizePrevisitContent(mergedSections, patient, resultsText, clinicalNarrative);
+        }
+        
+        // Single Bedrock call for Patient Story + Since Last Visit + Visit Priorities
+        async function synthesizePrevisitContent(sections, patient, resultsText, clinicalNarrative = []) {
+            const summaryEl = document.getElementById('situationSummary');
+            const priorityListHigh = document.getElementById('priorityListHigh');
+            const priorityListOngoing = document.getElementById('priorityListOngoing');
+            const visitChecklist = document.getElementById('visitChecklist');
+            
+            // Show loading states
+            if (summaryEl) summaryEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;color:#8896a4;font-size:13px;padding:8px 0;"><div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;"></div>Synthesizing patient narrative...</div>';
+            if (priorityListHigh) priorityListHigh.innerHTML = '<div class="priority-item moderate" style="justify-content:center;"><div style="display:flex;align-items:center;gap:8px;color:#8896a4;font-size:13px;"><div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;"></div>Analyzing visit priorities...</div></div>';
+            if (priorityListOngoing) priorityListOngoing.innerHTML = '';
+            if (visitChecklist) visitChecklist.innerHTML = '<div class="checklist-item" style="justify-content:center;"><div style="display:flex;align-items:center;gap:8px;color:#8896a4;font-size:13px;"><div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;"></div>Generating checklist...</div></div>';
+            
+            try {
+                // Build evidence lookup from clinical narrative for text matching in priorities
+                buildClinicalEvidenceLookup(clinicalNarrative);
+                
+                const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+                const resp = await fetch(`${backendUrl}/api/synthesize-previsit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sections: sections,
+                        patientId: patient?.id || '',
+                        patientAge: patient?.age || '',
+                        patientGender: patient?.gender || '',
+                        clinicalNarrative: clinicalNarrative
+                    })
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    // Render Patient Story with evidence links
+                    if (summaryEl && data.patientStory) {
+                        let storyHtml = sanitizeLLMText(data.patientStory)
+                            .replace(/\n\n+/g, '</p><p style="margin-top:10px;">')
+                            .replace(/\n/g, '<br>')
+                            .replace(/^/, '<p>')
+                            .replace(/$/, '</p>');
+                        
+                        // Count REF markers before processing
+                        const refMatches = storyHtml.match(/\[REF\d+\]/g);
+                        const closingMatches = storyHtml.match(/\[\/REF\d+\]/g);
+                        console.log('[Evidence] Opening REF markers:', refMatches ? refMatches.length : 0);
+                        console.log('[Evidence] Closing REF markers:', closingMatches ? closingMatches.length : 0);
+                        if (!closingMatches || closingMatches.length === 0) {
+                            console.log('[Evidence] Raw story (first 500):', storyHtml.substring(0, 500));
+                        }
+                        
+                        // Replace [REFx]text[/REFx] markers with clickable evidence spans
+                        if (data.evidenceMap) {
+                            storyHtml = storyHtml.replace(/\[REF(\d+)\](.*?)\[\/REF\1\]/g, (match, num, text) => {
+                                const refId = `REF${num}`;
+                                const refs = data.evidenceMap[refId];
+                                if (refs && refs.length > 0) {
+                                    const refsB64 = btoa(JSON.stringify(refs));
+                                    return `<span class="evidence-linked-text" data-refs-b64="${refsB64}" title="Click to view supporting evidence" onclick="showEvidencePopover(this)">${text}</span>`;
+                                }
+                                return text;
+                            });
+                            // Clean up any remaining [REFx] markers that weren't wrapped
+                            storyHtml = storyHtml.replace(/\[REF\d+\]/g, '');
+                            storyHtml = storyHtml.replace(/\[\/REF\d+\]/g, '');
+                        }
+                        summaryEl.innerHTML = storyHtml;
+                    }
+                    
+                    // Render Since Last Visit as block cards with evidence links
+                    if (data.sinceLastVisit && data.sinceLastVisit.length > 0) {
+                        const blocksContainer = document.getElementById('sinceLastVisitBlocks');
+                        const sinceHeader = document.getElementById('sinceLastVisitHeader');
+                        if (blocksContainer) {
+                            // Show the header and container
+                            if (sinceHeader) sinceHeader.style.display = '';
+                            blocksContainer.style.display = '';
+                            // Process evidence markers in a text string
+                            function processEvidence(text) {
+                                if (!data.evidenceMap) return text;
+                                let html = text;
+                                html = html.replace(/\[REF(\d+)\](.*?)\[\/REF\1\]/g, (match, num, innerText) => {
+                                    const refId = `REF${num}`;
+                                    const refs = data.evidenceMap[refId];
+                                    if (refs && refs.length > 0) {
+                                        const refsB64 = btoa(JSON.stringify(refs));
+                                        return `<span class="evidence-linked-text" data-refs-b64="${refsB64}">${innerText}</span>`;
+                                    }
+                                    return innerText;
+                                });
+                                html = html.replace(/\[REF\d+\]/g, '');
+                                html = html.replace(/\[\/REF\d+\]/g, '');
+                                return html;
+                            }
+                            
+                            const isNewFormat = data.sinceLastVisit[0] && typeof data.sinceLastVisit[0] === 'object' && 'header' in data.sinceLastVisit[0];
+                            
+                            if (isNewFormat) {
+                                blocksContainer.innerHTML = data.sinceLastVisit
+                                    .filter(cat => (cat.items || []).length > 0 || (cat.header || '').toLowerCase().includes('no events'))
+                                    .map(cat => {
+                                        // Strip REF markers from header before parsing
+                                        const cleanHeader = (cat.header || '').replace(/\[REF\d+\]/g, '').replace(/\[\/REF\d+\]/g, '').trim();
+                                        // Support both old format (header) and new format (category + date)
+                                        const category = cat.category || cleanHeader.replace(/\s*\([^)]*\)/, '') || '';
+                                        const date = cat.date || cleanHeader.match(/\(([^)]+)\)/)?.[1] || '';
+                                        
+                                        const headerHtml = `
+                                            <div class="since-block-header">
+                                                <span class="since-block-category">${processEvidence(category)}</span>
+                                                ${date ? `<span class="since-block-date">${date}</span>` : ''}
+                                            </div>
+                                        `;
+                                        const itemsHtml = (cat.items || []).map(item => 
+                                            `<div class="since-block-item"><span class="bullet">\u2022</span><span>${processEvidence(item)}</span></div>`
+                                        ).join('');
+                                        const footerHtml = (cat.items || []).length > 0 ? `
+                                            <div class="since-block-footer">
+                                                <a class="view-evidence-link" onclick="toggleCategoryEvidence(this)">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
+                                                    View supporting evidence
+                                                </a>
+                                                <div class="since-evidence-section">
+                                                    <div class="since-evidence-header">Supporting Evidence:</div>
+                                                    <div class="since-evidence-items" data-loaded="false">
+                                                        <div class="since-evidence-item"><span class="evidence-loading">Loading evidence...</span></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ` : '';
+                                        return `<div class="since-block-card">${headerHtml}${itemsHtml}${footerHtml}</div>`;
+                                    }).join('');
+                            } else {
+                                // Fallback: flat list in a single card
+                                const itemsHtml = data.sinceLastVisit.map(b => 
+                                    `<div class="since-block-item"><span class="bullet">\u2022</span><span>${processEvidence(b)}</span></div>`
+                                ).join('');
+                                blocksContainer.innerHTML = `<div class="since-block-card">${itemsHtml}</div>`;
+                            }
+                        }
+                    } else {
+                        const blocksContainer = document.getElementById('sinceLastVisitBlocks');
+                        if (blocksContainer) blocksContainer.innerHTML = '<div class="since-block-empty">No recent changes since last visit</div>';
+                    }
+                    
+                    // Render Visit Priorities
+                    if (data.visitPriorities) {
+                        renderBedrockPriorities(data.visitPriorities, data.evidenceMap);
+                        // Send to parent for scribe sidebar
+                        try { window.parent.postMessage({ type: 'bedrock-priorities', priorities: data.visitPriorities }, '*'); } catch(e) {}
+                    }
+                    
+                    // Generate checklist from priorities
+                    if (data.visitPriorities) {
+                        renderBedrockChecklist(data.visitPriorities);
+                    }
+                    
+                    console.log('[Bedrock] Pre-visit content rendered from single call');
+                    return;
+                }
+            } catch (e) {
+                console.warn('Pre-visit synthesis failed, using fallbacks:', e);
+            }
+            
+            // Fallback: try old separate endpoints
+            const age = patient?.age || '';
+            const gender = patient?.gender || '';
+            const summaryText = sections['overview'] || 'No overview available';
+            if (summaryEl) summaryEl.innerHTML = `<strong>${age} ${gender}</strong> - ${summaryText.replace(/\n/g, ' ')}`;
+            synthesizePatientNarrative(sections, patient, summaryEl, summaryEl.innerHTML);
+            synthesizeVisitPriorities(sections, patient, resultsText);
+        }
+        
+        // Synthesize patient narrative using Bedrock
+        async function synthesizePatientNarrative(sections, patient, summaryEl, fallbackHtml) {
+            try {
+                const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+                const resp = await fetch(`${backendUrl}/api/synthesize-narrative`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sections: sections,
+                        patientName: patient?.name || 'the patient',
+                        patientAge: patient?.age || '',
+                        patientGender: patient?.gender || ''
+                    })
+                });
+                const data = await resp.json();
+                if (data.success && data.narrative) {
+                    summaryEl.innerHTML = sanitizeLLMText(data.narrative);
+                } else {
+                    summaryEl.innerHTML = fallbackHtml;
+                }
+            } catch (e) {
+                console.warn('Narrative synthesis failed, using fallback:', e);
+                summaryEl.innerHTML = fallbackHtml;
+            }
+        }
+        
+        // Synthesize Visit Priorities & Checklist via Bedrock, with regex fallback
+        async function synthesizeVisitPriorities(sections, patient, resultsText) {
+            const priorityListHigh = document.getElementById('priorityListHigh');
+            const priorityListOngoing = document.getElementById('priorityListOngoing');
+            const visitChecklist = document.getElementById('visitChecklist');
+            
+            // Show loading spinners
+            if (priorityListHigh) {
+                priorityListHigh.innerHTML = `
+                    <div class="priority-item moderate" style="justify-content:center;">
+                        <div style="display:flex;align-items:center;gap:8px;color:#8896a4;font-size:13px;">
+                            <div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                            Analyzing visit priorities...
+                        </div>
+                    </div>`;
+            }
+            if (priorityListOngoing) priorityListOngoing.innerHTML = '';
+            if (visitChecklist) {
+                visitChecklist.innerHTML = `
+                    <div class="checklist-item" style="justify-content:center;">
+                        <div style="display:flex;align-items:center;gap:8px;color:#8896a4;font-size:13px;">
+                            <div style="width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;"></div>
+                            Generating checklist...
+                        </div>
+                    </div>`;
+            }
+            
+            try {
+                const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+                const resp = await fetch(`${backendUrl}/api/synthesize-priorities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sections: sections,
+                        patientName: patient?.name || 'the patient',
+                        patientAge: patient?.age || '',
+                        patientGender: patient?.gender || '',
+                        encounterReason: 'Follow-up visit'
+                    })
+                });
+                const data = await resp.json();
+                
+                if (data.success && data.priorities) {
+                    renderBedrockPriorities(data.priorities);
+                    renderBedrockChecklist(data.priorities);
+                    // Send priorities to parent window for scribe sidebar
+                    try { window.parent.postMessage({ type: 'bedrock-priorities', priorities: data.priorities }, '*'); } catch(e) {}
+                    console.log('[Bedrock] Priorities & checklist rendered from Bedrock');
+                    return;
+                }
+            } catch (e) {
+                console.warn('Bedrock priorities failed, using regex fallback:', e);
+            }
+            
+            // Fallback to regex-based generation
+            generateVisitPriorities(sections, resultsText);
+            generateVisitChecklist(sections, resultsText);
+        }
+        
+        // Render Bedrock-generated priorities using existing CSS classes
+        // Process [REFn]text[/REFn] evidence markers in any text string
+        function processEvidenceMarkers(text, evidenceMap) {
+            if (!text) return '';
+            let html = escapeHtml(text);
+            if (evidenceMap) {
+                // Replace [REFx]text[/REFx] markers with clickable evidence spans
+                html = html.replace(/\[REF(\d+)\](.*?)\[\/REF\1\]/g, (match, num, innerText) => {
+                    const refId = `REF${num}`;
+                    const refs = evidenceMap[refId];
+                    if (refs && refs.length > 0) {
+                        const refsB64 = btoa(JSON.stringify(refs));
+                        return `<span class="evidence-linked-text" data-refs-b64="${refsB64}" title="Click to view supporting evidence" onclick="showEvidencePopover(this)">${innerText}</span>`;
+                    }
+                    return innerText;
+                });
+            }
+            // Always clean up any remaining markers
+            html = html.replace(/\[REF\d+\]/g, '');
+            html = html.replace(/\[\/REF\d+\]/g, '');
+            return html;
+        }
+        
+        // Process evidence markers — inline version (no popover, for sections with collapsible evidence)
+        function processEvidenceMarkersInline(text, evidenceMap) {
+            if (!text) return '';
+            let html = escapeHtml(text);
+            if (evidenceMap) {
+                html = html.replace(/\[REF(\d+)\](.*?)\[\/REF\1\]/g, (match, num, innerText) => {
+                    const refId = `REF${num}`;
+                    const refs = evidenceMap[refId];
+                    if (refs && refs.length > 0) {
+                        const refsB64 = btoa(JSON.stringify(refs));
+                        return `<span class="evidence-linked-text" data-refs-b64="${refsB64}">${innerText}</span>`;
+                    }
+                    return innerText;
+                });
+            }
+            html = html.replace(/\[REF\d+\]/g, '');
+            html = html.replace(/\[\/REF\d+\]/g, '');
+            return html;
+        }
+
+        // Match text against clinical narrative evidence refs (for sections without Bedrock markers)
+        // Stores the clinical narrative evidence lookup built from API data
+        let _clinicalEvidenceLookup = null;
+        
+        function buildClinicalEvidenceLookup(clinicalNarrative) {
+            if (!clinicalNarrative || !Array.isArray(clinicalNarrative)) return;
+            _clinicalEvidenceLookup = [];
+            for (const item of clinicalNarrative) {
+                const text = (item.Text || '').trim();
+                const evidence = item.Evidence || [];
+                // Only index meaningful text fragments with evidence
+                if (text.length > 5 && evidence.length > 0 && !text.startsWith('#')) {
+                    // Clean the text for matching (remove markdown, newlines)
+                    const cleanText = text.replace(/[*#\n]/g, '').trim().toLowerCase();
+                    if (cleanText.length > 3) {
+                        _clinicalEvidenceLookup.push({ text: cleanText, refs: evidence });
+                    }
+                }
+            }
+        }
+        
+        // Text-based evidence matching is no longer needed — Bedrock now includes [REFn] markers in Visit Priorities
+        function addEvidenceByTextMatch(rawText) {
+            return escapeHtml(rawText);
+        }
+        
+        function renderBedrockPriorities(priorities, evidenceMap) {
+            const priorityListHigh = document.getElementById('priorityListHigh');
+            const priorityListOngoing = document.getElementById('priorityListOngoing');
+            const mustAddressHeader = document.getElementById('mustAddressHeader');
+            const ongoingHeader = document.getElementById('ongoingHeader');
+            
+            if (!priorityListHigh) return;
+            
+            const mustAddress = priorities.mustAddress || [];
+            const outstanding = priorities.outstanding || [];
+            
+            if (mustAddress.length === 0 && outstanding.length === 0) {
+                if (mustAddressHeader) mustAddressHeader.style.display = '';
+                priorityListHigh.innerHTML = `
+                    <div class="priority-item moderate">
+                        <div class="priority-content">
+                            <div class="priority-title">No Active Concerns</div>
+                            <div class="priority-description">No concerning trends identified requiring immediate attention</div>
+                            <span class="priority-badge guideline">STABLE</span>
+                        </div>
+                    </div>`;
+                if (priorityListOngoing) priorityListOngoing.innerHTML = '';
+                return;
+            }
+            
+            if (mustAddressHeader && mustAddress.length > 0) mustAddressHeader.style.display = '';
+            if (ongoingHeader && outstanding.length > 0) ongoingHeader.style.display = '';
+            
+            function renderPriorityItem(p, severity) {
+                let titleHtml = processEvidenceMarkersInline(sanitizeLLMText(p.title), evidenceMap);
+                let descHtml = processEvidenceMarkersInline(sanitizeLLMText(p.description), evidenceMap);
+                if (!titleHtml.includes('evidence-linked-text')) titleHtml = addEvidenceByTextMatch(p.title);
+                if (!descHtml.includes('evidence-linked-text')) descHtml = addEvidenceByTextMatch(p.description);
+                
+                // Check if this item has any evidence refs
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = titleHtml + descHtml;
+                const hasEvidence = tempDiv.querySelectorAll('.evidence-linked-text[data-refs-b64]').length > 0;
+                
+                const evidenceFooter = hasEvidence ? `
+                    <div class="since-block-footer" style="margin-top:8px;">
+                        <a class="view-evidence-link" onclick="toggleCategoryEvidence(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            View supporting evidence
+                        </a>
+                        <div class="since-evidence-section">
+                            <div class="since-evidence-header">Supporting Evidence:</div>
+                            <div class="since-evidence-items" data-loaded="false">
+                                <div class="since-evidence-item"><span class="evidence-loading">Loading evidence...</span></div>
+                            </div>
+                        </div>
+                    </div>` : '';
+                
+                return `
+                <div class="priority-item ${severity}">
+                    <div class="priority-content">
+                        <div class="priority-title">${titleHtml}</div>
+                        <div class="priority-description">${descHtml}</div>
+                        ${evidenceFooter}
+                    </div>
+                </div>`;
+            }
+            
+            priorityListHigh.innerHTML = mustAddress.map(p => renderPriorityItem(p, 'high')).join('') || `
+                <div class="priority-item moderate">
+                    <div class="priority-content">
+                        <div class="priority-title">No Urgent Concerns</div>
+                        <div class="priority-description">No high-priority items for this visit</div>
+                        <span class="priority-badge guideline">STABLE</span>
+                    </div>
+                </div>`;
+            
+            if (priorityListOngoing) {
+                priorityListOngoing.innerHTML = outstanding.map(p => renderPriorityItem(p, 'moderate')).join('');
+            }
+        }
+        
+        // Render Bedrock-generated checklist using existing CSS classes
+        function renderBedrockChecklist(priorities) {
+            const checklist = document.getElementById('visitChecklist');
+            if (!checklist) return;
+            
+            const items = priorities.checklist || [];
+            if (items.length === 0) {
+                checklist.innerHTML = `
+                    <div class="checklist-item">
+                        <div class="checkbox"></div>
+                        <div class="checklist-text">Review current medications</div>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checkbox"></div>
+                        <div class="checklist-text">Update medical history</div>
+                    </div>`;
+                return;
+            }
+            
+            checklist.innerHTML = items.map(item => `
+                <div class="checklist-item" onclick="toggleChecklistItem(this)">
+                    <div class="checkbox"></div>
+                    <div class="checklist-text">${escapeHtml(item)}</div>
+                </div>
+            `).join('');
+        }
+        
+        // HTML escape helper
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+        
+        // Toggle inline evidence section for a Since Last Visit card
+        async function toggleCategoryEvidence(linkEl) {
+            const footer = linkEl.closest('.since-block-footer');
+            const section = footer.querySelector('.since-evidence-section');
+            const itemsContainer = footer.querySelector('.since-evidence-items');
+            
+            if (section.classList.contains('expanded')) {
+                // Collapse
+                section.classList.remove('expanded');
+                linkEl.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    View supporting evidence`;
+                return;
+            }
+            
+            // Expand
+            section.classList.add('expanded');
+            linkEl.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Hide supporting evidence`;
+            
+            // If already loaded, don't fetch again
+            if (itemsContainer.getAttribute('data-loaded') === 'true') return;
+            
+            // Collect all FHIR refs from evidence-linked-text spans in this card/priority
+            const card = linkEl.closest('.since-block-card') || linkEl.closest('.priority-item');
+            const evidenceSpans = card.querySelectorAll('.evidence-linked-text[data-refs-b64]');
+            const allRefs = new Set();
+            evidenceSpans.forEach(span => {
+                try {
+                    const refs = JSON.parse(atob(span.getAttribute('data-refs-b64')));
+                    refs.forEach(r => allRefs.add(r));
+                } catch(e) {}
+            });
+            
+            if (allRefs.size === 0) {
+                itemsContainer.innerHTML = '<div class="since-evidence-item"><span style="color:#9ca3af;">No linked evidence available</span></div>';
+                itemsContainer.setAttribute('data-loaded', 'true');
+                return;
+            }
+            
+            // Fetch FHIR metadata for each unique ref
+            const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+            let html = '';
+            const uniqueRefs = [...allRefs];
+            
+            for (const ref of uniqueRefs) {
+                const parts = ref.split('/');
+                if (parts.length !== 2) continue;
+                const [resourceType, resourceId] = parts;
+                
+                try {
+                    const resp = await fetch(`${backendUrl}/api/fhir/${resourceType}/${resourceId}`);
+                    const data = await resp.json();
+                    if (data.success) {
+                        const m = data.meta || {};
+                        const name = m.name || resourceType;
+                        let date = m.date || '';
+                        if (date) {
+                            try {
+                                const dp = date.split(/[-T]/);
+                                date = new Date(parseInt(dp[0]), parseInt(dp[1])-1, parseInt(dp[2])).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+                            } catch(e) {}
+                        }
+                        const status = m.clinicalStatus || m.status || '';
+                        const desc = [name, date, status].filter(Boolean).join(' \u2022 ');
+                        html += `<div class="since-evidence-item" style="cursor:pointer;" onclick="downloadFhirResource('${resourceType}','${resourceId}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            <span>${desc}</span>
+                        </div>`;
+                    }
+                } catch(e) {
+                    console.warn('Failed to fetch evidence:', ref, e);
+                }
+            }
+            
+            itemsContainer.innerHTML = html || '<div class="since-evidence-item"><span style="color:#9ca3af;">No evidence details available</span></div>';
+            itemsContainer.setAttribute('data-loaded', 'true');
+        }
+
+        // Show evidence popover when clicking a reference marker
+        async function showEvidencePopover(el) {
+            // Remove any existing popover
+            const existing = document.querySelector('.evidence-popover');
+            if (existing) existing.remove();
+            
+            const refsB64 = el.getAttribute('data-refs-b64');
+            if (!refsB64) return;
+            
+            let refs;
+            try { refs = JSON.parse(atob(refsB64)); } catch(e) { console.error('Failed to parse evidence refs:', e); return; }
+            
+            // Create popover
+            const popover = document.createElement('div');
+            popover.className = 'evidence-popover';
+            popover.innerHTML = '<div class="evidence-popover-header">Supporting Evidence<span class="evidence-popover-close" onclick="this.closest(\'.evidence-popover\').remove()" title="Close">&times;</span></div><div class="evidence-popover-body"><div style="display:flex;align-items:center;gap:6px;color:#8896a4;font-size:12px;"><div style="width:12px;height:12px;border:2px solid #d1d5db;border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite;"></div>Loading...</div></div>';
+            
+            // Position near the clicked element — flip upward if near bottom
+            const rect = el.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const spaceBelow = viewportHeight - rect.bottom;
+            
+            if (spaceBelow < 200) {
+                // Not enough room below — position above
+                popover.style.bottom = (viewportHeight - rect.top - window.scrollY + 4) + 'px';
+                popover.style.top = 'auto';
+            } else {
+                popover.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+            }
+            popover.style.left = Math.max(8, Math.min(rect.left - 100, window.innerWidth - 320)) + 'px';
+            document.body.appendChild(popover);
+            
+            // Close on click outside
+            setTimeout(() => {
+                document.addEventListener('click', function closePopover(e) {
+                    if (!popover.contains(e.target) && e.target !== el) {
+                        popover.remove();
+                        document.removeEventListener('click', closePopover);
+                    }
+                });
+            }, 100);
+            
+            // Fetch FHIR resource details
+            const body = popover.querySelector('.evidence-popover-body');
+            const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+            let html = '';
+            
+            // Deduplicate refs
+            const uniqueRefs = [...new Set(refs)];
+            
+            for (const ref of uniqueRefs) {
+                const parts = ref.split('/');
+                if (parts.length !== 2) continue;
+                const [resourceType, resourceId] = parts;
+                
+                try {
+                    const resp = await fetch(`${backendUrl}/api/fhir/${resourceType}/${resourceId}`);
+                    const data = await resp.json();
+                    if (data.success) {
+                        const m = data.meta || {};
+                        const name = m.name || resourceType;
+                        const date = m.date || '';
+                        const status = m.clinicalStatus || m.status || '';
+                        
+                        let formattedDate = '';
+                        if (date) {
+                            try {
+                                const parts = date.split(/[-T]/);
+                                formattedDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2] || 1)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            } catch(e) { formattedDate = date; }
+                        }
+                        
+                        const statusBadge = status ? `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;background:${status === 'active' || status === 'final' ? '#dcfce7' : '#f1f5f9'};color:${status === 'active' || status === 'final' ? '#16a34a' : '#64748b'};">${status}</span>` : '';
+                        
+                        // Build detail lines based on resource type
+                        let details = [];
+                        if (resourceType === 'Encounter') {
+                            if (m.visitType) details.push(`<span style="color:#6366f1;font-weight:600;">${m.visitType}</span> visit`);
+                            if (formattedDate) details.push(formattedDate);
+                        } else if (resourceType === 'Patient') {
+                            if (m.gender) details.push(m.gender.charAt(0).toUpperCase() + m.gender.slice(1));
+                            if (m.birthDate) {
+                                try {
+                                    const bp = m.birthDate.split('-');
+                                    details.push('Born ' + new Date(parseInt(bp[0]), parseInt(bp[1])-1, parseInt(bp[2]||1)).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}));
+                                } catch(e) { details.push(m.birthDate); }
+                            }
+                            if (m.maritalStatus) details.push(m.maritalStatus);
+                        } else if (resourceType === 'MedicationRequest') {
+                            if (m.route) details.push(`Route: ${m.route}`);
+                            if (m.code) {
+                                const codeLabel = m.codeSystem ? m.codeSystem.split('/').pop().toUpperCase() : 'Code';
+                                details.push(`${codeLabel} code: ${m.code}`);
+                            }
+                            if (m.quantity !== undefined) details.push(`Qty: ${m.quantity}`);
+                            if (m.refills !== undefined) details.push(`Refills: ${m.refills}`);
+                            if (m.dosage) details.push(`Dose: ${m.dosage}`);
+                        } else if (resourceType === 'Condition') {
+                            if (m.code) {
+                                const codeLabel = m.codeSystem ? m.codeSystem.split('/').pop().toUpperCase() : 'Code';
+                                details.push(`${codeLabel} code: ${m.code}`);
+                            }
+                            if (m.clinicalStatus) details.push(m.clinicalStatus);
+                            if (m.onsetDate) {
+                                try {
+                                    const op = m.onsetDate.split(/[-T]/);
+                                    details.push('Onset: ' + new Date(parseInt(op[0]), parseInt(op[1])-1, parseInt(op[2]||1)).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}));
+                                } catch(e) { details.push('Onset: ' + m.onsetDate); }
+                            }
+                        } else {
+                            // Default: show value if present
+                            if (m.value !== undefined) details.push(`${m.value} ${m.unit || ''}`);
+                        }
+                        
+                        const detailHtml = details.length > 0 
+                            ? `<div class="evidence-popover-detail">${details.join(' · ')}</div>` 
+                            : '';
+                        const dateHtml = (resourceType !== 'Encounter' && formattedDate) 
+                            ? `<div class="evidence-popover-date">${formattedDate}</div>` 
+                            : '';
+                        
+                        // DocumentReference: show "Open Note" instead of "View Source"
+                        const actionLabel = (resourceType === 'DocumentReference' && m.hasPlaintext) ? 'Open Note' : 'View Source';
+                        const actionIcon = (resourceType === 'DocumentReference' && m.hasPlaintext)
+                            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'
+                            : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+                        
+                        html += `<div class="evidence-popover-item">
+                            <div class="evidence-popover-type">${resourceType} ${statusBadge}</div>
+                            <div class="evidence-popover-detail" style="font-weight:500;">${name}</div>
+                            ${detailHtml}
+                            ${dateHtml}
+                            <div class="evidence-popover-download" onclick="downloadFhirResource('${resourceType}', '${resourceId}')" title="${actionLabel}">
+                                ${actionIcon}
+                                ${actionLabel}
+                            </div>
+                        </div>`;
+                    } else {
+                        // Resource not found in HealthLake (e.g., inferred DocumentReferences)
+                        html += `<div class="evidence-popover-item"><div class="evidence-popover-type">${resourceType}</div><div class="evidence-popover-detail">Referenced in clinical narrative</div><div class="evidence-popover-date" style="color:#94a3b8;">Inferred from encounter data — not stored as discrete FHIR resource</div></div>`;
+                    }
+                } catch(e) {
+                    html += `<div class="evidence-popover-item"><div class="evidence-popover-type">${resourceType}</div><div class="evidence-popover-detail">Failed to load</div></div>`;
+                }
+            }
+            
+            body.innerHTML = html || '<div style="color:#94a3b8;font-size:12px;">No evidence details available</div>';
+        }
+        
+        // Download full FHIR resource as JSON file
+        async function downloadFhirResource(resourceType, resourceId) {
+            const backendUrl = window.parent.BACKEND_URL || 'http://localhost:5000';
+            try {
+                const resp = await fetch(`${backendUrl}/api/fhir/${resourceType}/${resourceId}?full=true`);
+                const data = await resp.json();
+                const r = data.resource || {};
+                const m = data.meta || {};
+                
+                // DocumentReference with plaintext: open the clinical note directly
+                if (resourceType === 'DocumentReference') {
+                    let noteText = '';
+                    for (const c of (r.content || [])) {
+                        const att = c.attachment || {};
+                        if (att.contentType === 'text/plain' && att.data) {
+                            try { 
+                                // Decode base64 as UTF-8 (atob returns Latin-1)
+                                const bytes = Uint8Array.from(atob(att.data), c => c.charCodeAt(0));
+                                noteText = new TextDecoder('utf-8').decode(bytes);
+                            } catch(e) { noteText = att.data; }
+                        }
+                    }
+                    if (noteText) {
+                        const docType = m.name || 'Clinical Note';
+                        const date = m.date || '';
+                        let header = `${docType}`;
+                        if (date) {
+                            try {
+                                const parts = date.split(/[-T]/);
+                                header += ` — ${new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]||1)).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'})}`;
+                            } catch(e) { header += ` — ${date}`; }
+                        }
+                        const text = `${header}\n${'='.repeat(header.length)}\n\n${noteText}`;
+                        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                        window.open(URL.createObjectURL(blob), '_blank');
+                        return;
+                    }
+                }
+                
+                // All other resource types: structured metadata view
+                let lines = [];
+                lines.push(`Resource Type: ${m.resourceType || resourceType}`);
+                lines.push(`Name: ${m.name || r.code?.text || r.code?.coding?.[0]?.display || 'N/A'}`);
+                
+                if (r.valueQuantity) {
+                    lines.push(`Value: ${r.valueQuantity.value} ${r.valueQuantity.unit || ''}`);
+                } else if (m.value !== undefined) {
+                    lines.push(`Value: ${m.value} ${m.unit || ''}`);
+                }
+                
+                lines.push(`Status: ${m.status || m.clinicalStatus || r.status || 'N/A'}`);
+                
+                // Skip status line for Patient (no status field in FHIR Patient resource)
+                if (resourceType === 'Patient') {
+                    lines.pop();
+                }
+                
+                const date = m.date || r.effectiveDateTime || r.authoredOn || r.recordedDate || '';
+                if (date) {
+                    try {
+                        const parts = date.split('-');
+                        const formatted = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2] || 1)).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                        lines.push(`Date: ${formatted}`);
+                    } catch(e) { lines.push(`Date: ${date}`); }
+                }
+                
+                // Encounter-specific
+                if (m.visitType) lines.push(`Visit Type: ${m.visitType}`);
+                if (m.classCode) lines.push(`Class Code: ${m.classCode}`);
+                
+                // Patient-specific
+                if (m.gender) lines.push(`Gender: ${m.gender.charAt(0).toUpperCase() + m.gender.slice(1)}`);
+                if (m.birthDate) lines.push(`Date of Birth: ${m.birthDate}`);
+                if (m.maritalStatus) lines.push(`Marital Status: ${m.maritalStatus}`);
+                
+                // Condition-specific
+                if (resourceType === 'Condition') {
+                    if (m.code) {
+                        const codeLabel = m.codeSystem ? m.codeSystem.split('/').pop().toUpperCase() : 'Code';
+                        lines.push(`${codeLabel} Code: ${m.code}`);
+                    }
+                    if (m.clinicalStatus) lines.push(`Clinical Status: ${m.clinicalStatus}`);
+                    if (m.onsetDate) lines.push(`Onset Date: ${m.onsetDate}`);
+                }
+                
+                // MedicationRequest-specific
+                if (resourceType === 'MedicationRequest') {
+                    if (m.route) lines.push(`Route: ${m.route}`);
+                    if (m.code) {
+                        const codeLabel = m.codeSystem ? m.codeSystem.split('/').pop().toUpperCase() : 'Code';
+                        lines.push(`${codeLabel} Code: ${m.code}`);
+                    }
+                    if (m.quantity !== undefined) lines.push(`Quantity: ${m.quantity}`);
+                    if (m.refills !== undefined) lines.push(`Refills: ${m.refills}`);
+                    if (m.dosage) lines.push(`Dosage: ${m.dosage}`);
+                }
+                
+                if (r.referenceRange && r.referenceRange.length > 0) {
+                    const range = r.referenceRange[0];
+                    const low = range.low?.value !== undefined ? range.low.value : '';
+                    const high = range.high?.value !== undefined ? range.high.value : '';
+                    if (low !== '' || high !== '') lines.push(`Reference Range: ${low} - ${high}`);
+                }
+                
+                if (m.category) lines.push(`Category: ${m.category}`);
+                lines.push(`\nFHIR ID: ${r.id || resourceId}`);
+                if (r.meta?.lastUpdated) lines.push(`Last Updated: ${r.meta.lastUpdated}`);
+                
+                const text = lines.join('\n');
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                window.open(URL.createObjectURL(blob), '_blank');
+            } catch(e) {
+                console.error('[Evidence] Failed to open resource:', e);
+            }
+        }
+        
+        // Download all evidence refs for a metric card
+        async function downloadEvidenceRefs(el) {
+            console.log('[Download] downloadEvidenceRefs called');
+            const refsStr = el.getAttribute('data-refs');
+            console.log('[Download] refs:', refsStr);
+            if (!refsStr) { console.log('[Download] No refs found'); return; }
+            const refs = refsStr.split(',');
+            for (const ref of refs) {
+                const parts = ref.split('/');
+                console.log('[Download] Processing ref:', ref, 'parts:', parts);
+                if (parts.length === 2) {
+                    await downloadFhirResource(parts[0], parts[1]);
+                }
+            }
+        }
+        
+        // Generate Visit Priorities based on patient data
+        function generateVisitPriorities(sections, resultsText) {
+            const priorityListHigh = document.getElementById('priorityListHigh');
+            const priorityListOngoing = document.getElementById('priorityListOngoing');
+            
+            if (!priorityListHigh) return;
+            
+            const highPriorities = [];
+            const ongoingPriorities = [];
+            
+            // Check for elevated Uric Acid (gout risk)
+            if (resultsText.toLowerCase().includes('uric acid elevated') || 
+                resultsText.match(/Uric Acid[^0-9]*(\d+\.?\d*)/i)?.[1] >= 7.0) {
+                const match = resultsText.match(/Uric Acid[^0-9]*(\d+\.?\d*)\s*mg\/dL/i);
+                const value = match ? match[1] : 'elevated';
+                highPriorities.push({
+                    title: 'Elevated Uric Acid',
+                    description: `${value} mg/dL - monitor for gout symptoms`,
+                    badge: 'HIGH PRIORITY',
+                    type: 'diagnosis'
+                });
+            }
+            
+            // Check for elevated Sed Rate (inflammation)
+            const sedRateMatch2 = resultsText.match(/Sed Rate[^0-9]*([\d.]+)\s*mm\/h/i);
+            if (sedRateMatch2 && parseFloat(sedRateMatch2[1]) >= 20) {
+                ongoingPriorities.push({
+                    title: 'Elevated Sed Rate',
+                    description: `${sedRateMatch2[1]} mm/h - inflammation marker`,
+                    badge: 'MONITOR',
+                    type: 'guideline'
+                });
+            }
+            
+            // Check medications
+            const meds = sections['current medications'] || '';
+            if (meds.toLowerCase().includes('colchicine')) {
+                ongoingPriorities.push({
+                    title: 'Colchicine Therapy',
+                    description: 'Review gout management and medication effectiveness',
+                    badge: 'ONGOING',
+                    type: 'guideline'
+                });
+            }
+            
+            // Check recent care
+            const recentCare = sections['recent care'] || '';
+            if (recentCare.toLowerCase().includes('inpatient')) {
+                highPriorities.push({
+                    title: 'Recent Hospitalization',
+                    description: 'Follow up on inpatient encounter',
+                    badge: 'HIGH PRIORITY',
+                    type: 'diagnosis'
+                });
+            }
+            
+            // If no priorities found, show stable message
+            if (highPriorities.length === 0 && ongoingPriorities.length === 0) {
+                priorityListHigh.innerHTML = `
+                    <div class="priority-item moderate">
+                        <div class="priority-content">
+                            <div class="priority-title">No Active Concerns</div>
+                            <div class="priority-description">No concerning trends identified requiring immediate attention</div>
+                            <span class="priority-badge guideline">STABLE</span>
+                        </div>
+                    </div>
+                `;
+                if (priorityListOngoing) priorityListOngoing.innerHTML = '';
+                return;
+            }
+            
+            // Render high priorities
+            priorityListHigh.innerHTML = highPriorities.map(p => `
+                <div class="priority-item high">
+                    <div class="priority-content">
+                        <div class="priority-title">${sanitizeLLMText(p.title)}</div>
+                        <div class="priority-description">${sanitizeLLMText(p.description)}</div>
+                    </div>
+                </div>
+            `).join('') || `
+                <div class="priority-item moderate">
+                    <div class="priority-content">
+                        <div class="priority-title">No Urgent Concerns</div>
+                        <div class="priority-description">No high-priority items for this visit</div>
+                        <span class="priority-badge guideline">STABLE</span>
+                    </div>
+                </div>
+            `;
+            
+            // Render ongoing priorities
+            if (priorityListOngoing) {
+                priorityListOngoing.innerHTML = ongoingPriorities.map(p => `
+                    <div class="priority-item moderate">
+                        <div class="priority-content">
+                            <div class="priority-title">${sanitizeLLMText(p.title)}</div>
+                            <div class="priority-description">${sanitizeLLMText(p.description)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Extract evidence references from ClinicalNarrative items
+        // Maps text snippets to their FHIR resource references
+        function extractEvidenceFromNarrative(clinicalNarrative) {
+            const evidenceMap = {};
+            
+            clinicalNarrative.forEach(item => {
+                if (item.Evidence && item.Evidence.length > 0) {
+                    const text = (item.Text || '').trim();
+                    // Store evidence for this text snippet
+                    evidenceMap[text] = item.Evidence;
+                    
+                    // Also try to extract key terms for matching
+                    // e.g., "Glucose 120 mg/dL," -> key: "glucose"
+                    const lowerText = text.toLowerCase();
+                    if (lowerText.includes('glucose')) evidenceMap['glucose'] = item.Evidence;
+                    if (lowerText.includes('blood pressure') || lowerText.includes('bp ')) evidenceMap['blood_pressure'] = item.Evidence;
+                    if (lowerText.includes('weight') || lowerText.includes('body weight')) evidenceMap['weight'] = item.Evidence;
+                    if (lowerText.includes('creatinine')) evidenceMap['creatinine'] = item.Evidence;
+                    if (lowerText.includes('gfr') || lowerText.includes('glomerular')) evidenceMap['gfr'] = item.Evidence;
+                    if (lowerText.includes('hemoglobin') || lowerText.includes('hgb')) evidenceMap['hemoglobin'] = item.Evidence;
+                    if (lowerText.includes('a1c') || lowerText.includes('hba1c')) evidenceMap['a1c'] = item.Evidence;
+                    if (lowerText.includes('cholesterol') || lowerText.includes('ldl') || lowerText.includes('hdl')) evidenceMap['cholesterol'] = item.Evidence;
+                    if (lowerText.includes('platelet')) evidenceMap['platelet'] = item.Evidence;
+                    if (lowerText.includes('wbc') || lowerText.includes('white blood')) evidenceMap['wbc'] = item.Evidence;
+                    if (lowerText.includes('rbc') || lowerText.includes('red blood')) evidenceMap['rbc'] = item.Evidence;
+                    if (lowerText.includes('hematocrit') || lowerText.includes('hct')) evidenceMap['hematocrit'] = item.Evidence;
+                    if (lowerText.includes('uric acid')) evidenceMap['uric_acid'] = item.Evidence;
+                    if (lowerText.includes('sed rate') || lowerText.includes('sedimentation')) evidenceMap['sed_rate'] = item.Evidence;
+                    if (lowerText.includes('crp') || lowerText.includes('c-reactive')) evidenceMap['crp'] = item.Evidence;
+                }
+            });
+            
+            return evidenceMap;
+        }
+        
+        // Format FHIR resource reference for display
+        function formatEvidenceReference(ref) {
+            // ref format: "ResourceType/hash" e.g., "Observation/abc123..."
+            const parts = ref.split('/');
+            const resourceType = parts[0] || 'Unknown';
+            const id = parts[1] || '';
+            const shortId = id.length > 12 ? id.substring(0, 12) + '...' : id;
+            
+            // Map resource types to friendly names and icons
+            const typeMap = {
+                'Observation': { name: 'Lab Result', icon: 'flask' },
+                'Patient': { name: 'Patient Record', icon: 'user' },
+                'Encounter': { name: 'Visit Record', icon: 'calendar' },
+                'Procedure': { name: 'Procedure', icon: 'activity' },
+                'MedicationRequest': { name: 'Medication', icon: 'pill' },
+                'Condition': { name: 'Condition', icon: 'heart' },
+                'DiagnosticReport': { name: 'Diagnostic Report', icon: 'file-text' },
+                'Immunization': { name: 'Immunization', icon: 'shield' },
+                'AllergyIntolerance': { name: 'Allergy', icon: 'alert-triangle' }
+            };
+            
+            const info = typeMap[resourceType] || { name: resourceType, icon: 'file' };
+            return { type: info.name, icon: info.icon, ref: 'Tap to verify source', fullRef: ref };
+        }
+        
+        // Get SVG icon for evidence type
+        function getEvidenceIcon(iconName) {
+            const icons = {
+                'flask': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v6l4 8H5l4-8V3z"/><path d="M9 3h6"/></svg>',
+                'user': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+                'calendar': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+                'activity': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+                'pill': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>',
+                'heart': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+                'file-text': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+                'shield': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+                'alert-triangle': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+                'file': '<svg class="evidence-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+            };
+            return icons[iconName] || icons['file'];
+        }
+        
+        function updateMetricCards(resultsText, evidenceMap = {}) {
+            const metricCards = document.querySelector('.metric-cards');
+            if (!metricCards || !resultsText.trim()) return;
+            
+            // Parse key metrics from results
+            const metrics = [];
+            
+            // Extract specific values using regex
+            const glucoseMatch = resultsText.match(/Glucose\s+(\d+)\s*mg\/dL/i);
+            if (glucoseMatch) {
+                const value = parseInt(glucoseMatch[1]);
+                const status = value >= 126 ? 'danger' : value >= 100 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Glucose', 
+                    value: value + ' mg/dL', 
+                    target: 'Fasting: <100 mg/dL',
+                    status,
+                    evidenceKey: 'glucose'
+                });
+            }
+            
+            const bpMatch = resultsText.match(/Blood pressure\s+(\d+\/\d+)\s*mmHg/i);
+            if (bpMatch) {
+                const bp = bpMatch[1];
+                const systolic = parseInt(bp.split('/')[0]);
+                const status = systolic >= 140 ? 'danger' : systolic >= 130 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Blood Pressure', 
+                    value: bp + ' mmHg', 
+                    target: 'Target: <130/80', 
+                    status,
+                    evidenceKey: 'blood_pressure'
+                });
+            }
+            
+            const weightMatch = resultsText.match(/Body weight\s+([\d.]+)\s*lbs/i);
+            if (weightMatch) {
+                metrics.push({ 
+                    label: 'Weight', 
+                    value: weightMatch[1] + ' lbs', 
+                    target: '',
+                    status: 'neutral',
+                    evidenceKey: 'weight'
+                });
+            }
+            
+            const creatMatch = resultsText.match(/Creatinine\s+([\d.]+)\s*mg\/dL/i);
+            if (creatMatch) {
+                const value = parseFloat(creatMatch[1]);
+                const status = value > 1.3 ? 'danger' : value < 0.7 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Creatinine', 
+                    value: value + ' mg/dL', 
+                    target: 'Normal: 0.7-1.3',
+                    status,
+                    evidenceKey: 'creatinine'
+                });
+            }
+            
+            const gfrMatch = resultsText.match(/GFR[^0-9]*(\d+)\s*mL/i);
+            if (gfrMatch) {
+                const gfr = parseInt(gfrMatch[1]);
+                const status = gfr < 60 ? 'danger' : gfr < 90 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'eGFR', 
+                    value: gfr + ' mL/min', 
+                    target: 'Normal: >90', 
+                    status,
+                    evidenceKey: 'gfr'
+                });
+            }
+            
+            const hgbMatch = resultsText.match(/Hemoglobin\s+([\d.]+)\s*g\/dL/i);
+            if (hgbMatch) {
+                const value = parseFloat(hgbMatch[1]);
+                const status = value < 12 ? 'danger' : value > 16 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Hemoglobin', 
+                    value: value + ' g/dL', 
+                    target: 'Normal: 12-16',
+                    status,
+                    evidenceKey: 'hemoglobin'
+                });
+            }
+            
+            // Uric Acid
+            const uricAcidMatch = resultsText.match(/Uric Acid[^0-9]*([\d.]+)\s*mg\/dL/i);
+            if (uricAcidMatch) {
+                const value = parseFloat(uricAcidMatch[1]);
+                const status = value >= 7.0 ? 'danger' : value >= 6.0 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Uric Acid', 
+                    value: value + ' mg/dL', 
+                    target: 'Normal: <7.0',
+                    status,
+                    evidenceKey: 'uric_acid'
+                });
+            }
+            
+            // Sed Rate (ESR)
+            const sedRateMatch = resultsText.match(/Sed Rate[^0-9]*([\d.]+)\s*mm\/h/i);
+            if (sedRateMatch) {
+                const value = parseInt(parseFloat(sedRateMatch[1]));
+                const status = value >= 30 ? 'danger' : value >= 20 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Sed Rate', 
+                    value: value + ' mm/h', 
+                    target: 'Normal: <20',
+                    status,
+                    evidenceKey: 'sed_rate'
+                });
+            }
+            
+            // CRP
+            const crpMatch = resultsText.match(/CRP[^0-9]*([\d.]+)\s*mg\/dL/i);
+            if (crpMatch) {
+                const value = parseFloat(crpMatch[1]);
+                const status = value > 1.0 ? 'danger' : value > 0.3 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'CRP', 
+                    value: value + ' mg/dL', 
+                    target: 'Normal: <0.3',
+                    status,
+                    evidenceKey: 'crp'
+                });
+            }
+            
+            // WBC
+            const wbcMatch = resultsText.match(/WBC\s+([\d.]+)\s*10\*3\/uL/i);
+            if (wbcMatch) {
+                const value = parseFloat(wbcMatch[1]);
+                const status = value > 11.0 ? 'warning' : value < 4.0 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'WBC', 
+                    value: value + ' K/uL', 
+                    target: 'Normal: 4-11',
+                    status,
+                    evidenceKey: 'wbc'
+                });
+            }
+            
+            // Platelets
+            const plateletMatch = resultsText.match(/Platelets\s+([\d.]+)\s*10\*3\/uL/i);
+            if (plateletMatch) {
+                const value = parseInt(parseFloat(plateletMatch[1]));
+                const status = value < 150 ? 'warning' : value > 400 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Platelets', 
+                    value: value + ' K/uL', 
+                    target: 'Normal: 150-400',
+                    status,
+                    evidenceKey: 'platelet'
+                });
+            }
+            
+            // Hematocrit
+            const hctMatch = resultsText.match(/Hematocrit\s+([\d.]+)%/i);
+            if (hctMatch) {
+                const value = parseFloat(hctMatch[1]);
+                const status = value < 36 ? 'warning' : value > 46 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'Hematocrit', 
+                    value: value + '%', 
+                    target: 'Normal: 36-46%',
+                    status,
+                    evidenceKey: 'hematocrit'
+                });
+            }
+            
+            // RBC
+            const rbcMatch = resultsText.match(/RBC\s+([\d.]+)\s*x10e6/i);
+            if (rbcMatch) {
+                const value = parseFloat(rbcMatch[1]);
+                const status = value < 4.0 ? 'danger' : value > 5.5 ? 'warning' : 'neutral';
+                metrics.push({ 
+                    label: 'RBC', 
+                    value: value + ' M/uL', 
+                    target: 'Normal: 4.0-5.5',
+                    status,
+                    evidenceKey: 'rbc'
+                });
+            }
+            
+            if (metrics.length > 0) {
+                metricCards.innerHTML = metrics.map(m => {
+                    const evidence = evidenceMap[m.evidenceKey] || [];
+                    const hasEvidence = evidence.length > 0;
+                    
+                    return `
+                        <div class="metric-card">
+                            <div class="metric-main">
+                                <div class="metric-info">
+                                    <div class="metric-label-value">
+                                        <div class="metric-label">${m.label}</div>
+                                        ${hasEvidence ? 
+                                            `<div class="metric-value ${m.status || 'neutral'} evidence-linked-text" data-refs-b64="${btoa(JSON.stringify(evidence))}" title="Click to view supporting evidence" onclick="showEvidencePopover(this)">${m.value}</div>` :
+                                            `<div class="metric-value ${m.status || 'neutral'}">${m.value}</div>`
+                                        }
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="metric-target">${m.target}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                metricCards.innerHTML = '<div class="metric-card"><div class="metric-info"><div class="metric-label-value"><div class="metric-label" style="color:#8896a4">No recent vitals or lab results available</div></div></div></div>';
+            }
+        }
+        
+        function updateSinceLastVisit(narrative) {
+            // Update the "Since last visit" subsection header area
+            const subsectionHeader = document.querySelector('.visit-card:first-of-type .subsection-header');
+            if (subsectionHeader && narrative.trim()) {
+                // Find the date from narrative if present
+                const dateMatch = narrative.match(/(\d{2}\/\d{2}\/\d{4})/);
+                if (dateMatch) {
+                    subsectionHeader.textContent = `Since last visit (${dateMatch[1]})`;
+                }
+            }
+        }
+        
+        function updateTrends(narrative) {
+            // Trends data is now sent to Bedrock via synthesizePrevisitContent
+            // which incorporates it into Visit Priorities. No direct rendering needed.
+            // Only show "No Active Concerns" if trends are empty AND priorities haven't loaded yet.
+            const priorityListHigh = document.getElementById('priorityListHigh');
+            
+            const cleanText = narrative.replace(/\*/g, '').trim();
+            
+            // Don't overwrite if priorities already populated
+            if (priorityListHigh && priorityListHigh.innerHTML.trim() !== '' && 
+                !priorityListHigh.innerHTML.includes('Loading') &&
+                !priorityListHigh.innerHTML.includes('Analyzing')) {
+                return;
+            }
+        }
+        
+        // Generate visit checklist based on patient data
+        function generateVisitChecklist(sections, resultsText) {
+            const checklist = document.getElementById('visitChecklist');
+            if (!checklist) return;
+            
+            const items = [];
+            
+            // Check blood pressure
+            const bpMatch = resultsText.match(/Blood pressure\s+(\d+)\/(\d+)\s*mmHg/i);
+            if (bpMatch) {
+                const systolic = parseInt(bpMatch[1]);
+                const diastolic = parseInt(bpMatch[2]);
+                if (systolic >= 140 || diastolic >= 90) {
+                    items.push(`Review elevated blood pressure (${bpMatch[1]}/${bpMatch[2]} mmHg)`);
+                } else if (systolic >= 130 || diastolic >= 80) {
+                    items.push(`Monitor blood pressure (${bpMatch[1]}/${bpMatch[2]} mmHg - borderline)`);
+                }
+            }
+            
+            // Check glucose
+            const glucoseMatch = resultsText.match(/Glucose\s+(\d+)\s*mg\/dL/i);
+            if (glucoseMatch) {
+                const glucose = parseInt(glucoseMatch[1]);
+                if (glucose >= 126) {
+                    items.push(`Discuss elevated glucose (${glucose} mg/dL - diabetic range)`);
+                } else if (glucose >= 100) {
+                    items.push(`Review glucose level (${glucose} mg/dL - prediabetic range)`);
+                }
+            }
+            
+            // Check Uric Acid (elevated if > 7.0 mg/dL for women, > 8.0 for men)
+            const uricAcidMatch = resultsText.match(/Uric Acid[^0-9]*(\d+\.?\d*)\s*mg\/dL/i);
+            if (uricAcidMatch) {
+                const uricAcid = parseFloat(uricAcidMatch[1]);
+                if (uricAcid >= 7.0 || resultsText.toLowerCase().includes('elevated')) {
+                    items.push(`Review elevated Uric Acid (${uricAcid} mg/dL) - gout risk`);
+                }
+            }
+            
+            // Check Sed Rate (ESR) - elevated if > 20 mm/h for women, > 15 for men
+            const sedRateCheckMatch = resultsText.match(/Sed Rate[^0-9]*([\d.]+)\s*mm\/h/i);
+            if (sedRateCheckMatch) {
+                const sedRate = parseFloat(sedRateCheckMatch[1]);
+                if (sedRate >= 20) {
+                    items.push(`Discuss elevated Sed Rate (${sedRate} mm/h) - inflammation marker`);
+                }
+            }
+            
+            // Check CRP (elevated if > 0.3 mg/dL)
+            const crpCheckMatch = resultsText.match(/CRP[^0-9]*([\d.]+)\s*mg\/dL/i);
+            if (crpCheckMatch) {
+                const crp = parseFloat(crpCheckMatch[1]);
+
+                if (crp > 0.3) {
+                    items.push(`Review CRP level (${crp} mg/dL) - inflammation marker`);
+                }
+            }
+            
+            // Check eGFR
+            const gfrMatch = resultsText.match(/GFR[^0-9]*(\d+)\s*mL/i);
+            if (gfrMatch) {
+                const gfr = parseInt(gfrMatch[1]);
+                if (gfr < 60) {
+                    items.push(`Evaluate kidney function (eGFR ${gfr} - reduced)`);
+                } else if (gfr < 90) {
+                    items.push(`Monitor kidney function (eGFR ${gfr})`);
+                }
+            }
+            
+            // Check for medications that need follow-up
+            const meds = sections['current medications'] || '';
+            if (meds.toLowerCase().includes('colchicine')) {
+                items.push('Review Colchicine therapy for gout management');
+            }
+            if (meds.toLowerCase().includes('eye') || meds.toLowerCase().includes('ophthalmic')) {
+                items.push('Follow up on eye condition/treatment');
+            }
+            if (meds.toLowerCase().includes('antibiotic') || meds.toLowerCase().includes('erythromycin')) {
+                items.push('Review antibiotic treatment progress');
+            }
+            
+            // Check conditions
+            const conditions = sections['chronic and active conditions'] || '';
+            if (conditions.toLowerCase().includes('diabetes')) {
+                items.push('Review diabetes management');
+            }
+            if (conditions.toLowerCase().includes('hypertension')) {
+                items.push('Assess hypertension control');
+            }
+            
+            // Check recent care
+            const recentCare = sections['recent care'] || '';
+            if (recentCare.toLowerCase().includes('lab') || recentCare.toLowerCase().includes('panel')) {
+                items.push('Review recent lab results with patient');
+            }
+            
+            // Add generic items if list is short
+            if (items.length < 3) {
+                items.push('Review current medications');
+                items.push('Update medical history');
+                items.push('Schedule follow-up if needed');
+            }
+            
+            // Render checklist with click handlers
+            checklist.innerHTML = items.map(item => `
+                <div class="checklist-item" onclick="toggleChecklistItem(this)">
+                    <div class="checkbox"></div>
+                    <div class="checklist-text">${item}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Toggle checklist item checked state
+        function toggleChecklistItem(element) {
+            element.classList.toggle('checked');
+        }
+        
+        function updateSituationCard(narrative, patient) {
+            // Legacy function - kept for compatibility
+            const summaryEl = document.getElementById('situationSummary');
+            if (summaryEl) {
+                const age = patient ? patient.age : '';
+                const gender = patient ? patient.gender : '';
+                let summary = narrative.substring(0, 300).replace(/##\s*/g, '').replace(/\*\*/g, '').replace(/\n+/g, ' ').trim();
+                summaryEl.innerHTML = `<strong>${age} ${gender}</strong> - ${summary}`;
+            }
+        }
+        
+        function updateBackgroundCard(narrative) {
+            // Update the background section with conditions/medications from narrative
+            const conditionBadges = document.querySelector('.visit-card:nth-of-type(2) .badge-row');
+            if (conditionBadges && narrative) {
+                // Extract conditions from narrative (simplified)
+                const conditions = [];
+                if (narrative.toLowerCase().includes('diabetes')) conditions.push('Diabetes');
+                if (narrative.toLowerCase().includes('hypertension')) conditions.push('Hypertension');
+                if (narrative.toLowerCase().includes('asthma')) conditions.push('Asthma');
+                if (narrative.toLowerCase().includes('copd')) conditions.push('COPD');
+                
+                if (conditions.length > 0) {
+                    conditionBadges.innerHTML = conditions.map(c => 
+                        `<span class="condition-badge">${c}</span>`
+                    ).join('');
+                }
+            }
+        }
+        
+        function updateAssessmentCard(narrative) {
+            // Update trends/assessment section
+            const priorityList = document.querySelector('.visit-card:nth-of-type(3) .priority-list');
+            if (priorityList && narrative) {
+                // Parse trends from narrative
+                let cleanNarrative = narrative.replace(/##\s*/g, '').replace(/\*\*/g, '').replace(/\n+/g, '<br>');
+                
+                // Show first 500 chars of trends
+                if (cleanNarrative.length > 500) {
+                    cleanNarrative = cleanNarrative.substring(0, 500) + '...';
+                }
+                
+                priorityList.innerHTML = `
+                    <div class="priority-item">
+                        <div class="priority-content">
+                            <div class="priority-description">${cleanNarrative}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            // Add animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

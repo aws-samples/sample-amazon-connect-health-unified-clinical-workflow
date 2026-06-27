@@ -1,0 +1,258 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Shared foundation resources for the Amazon Connect Health unified
+  clinical workflow sample. Creates a single AWS HealthLake datastore
+  (FHIR R4), an S3 bucket for clinical outputs (used by the ambient-docs
+  pipeline), and the IAM role HealthLake assumes for bulk-import jobs.
+
+  The Amazon Connect Health domain is NOT created by this template —
+  Connect Health is a preview service at time of authoring and domain
+  creation typically goes through the AWS account team. See
+  ConnectHealthDomainId parameter below.
+
+  Deploy this stack first. The two workflow stacks (provider-workflow
+  and care-manager-workflow) consume the exported outputs.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment tag and naming suffix
+
+  PreloadSyntheaData:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: >-
+      If 'true', HealthLake will be created with PreloadDataType=SYNTHEA,
+      populating the datastore with a built-in synthetic patient
+      population. Recommended for sample/demo deployments. Set to 'false'
+      to start with an empty datastore (then load your own data via
+      shared/healthlake/load-sample-data.py).
+
+  ConnectHealthDomainId:
+    Type: String
+    Default: ''
+    Description: >-
+      Optional. The pre-existing Amazon Connect Health domain ID this
+      deployment should reference (e.g., dom-abc123def456). Leave blank
+      if you don't have one yet — the stack outputs will reflect the
+      absence and downstream stacks should be configured manually.
+
+Conditions:
+  PreloadSynthea: !Equals [!Ref PreloadSyntheaData, 'true']
+  HasConnectHealthDomain: !Not [!Equals [!Ref ConnectHealthDomainId, '']]
+
+Resources:
+
+  # ──────────────────────────────────────────────────────────────
+  # HealthLake datastore — single FHIR R4 store both workflows share
+  # ──────────────────────────────────────────────────────────────
+  HealthLakeDatastore:
+    Type: AWS::HealthLake::FHIRDatastore
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      DatastoreName: !Sub 'unified-cw-${Environment}'
+      DatastoreTypeVersion: R4
+      PreloadDataConfig: !If
+        - PreloadSynthea
+        - PreloadDataType: SYNTHEA
+        - !Ref AWS::NoValue
+      SseConfiguration:
+        KmsEncryptionConfig:
+          # CMK_TYPE = AWS_OWNED_KMS_KEY uses an AWS-managed key.
+          # Production deployments should set CMK_TYPE: CUSTOMER_MANAGED_KMS_KEY
+          # and provide a KmsKeyId. See docs/HIPAA-NOTICE.md.
+          CmkType: AWS_OWNED_KMS_KEY
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # IAM role HealthLake assumes to read from/write to S3 during
+  # bulk-import and bulk-export jobs. Required for the
+  # shared/healthlake/load-sample-data.py script to function.
+  # ──────────────────────────────────────────────────────────────
+  HealthLakeJobsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'unified-cw-healthlake-jobs-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: healthlake.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: S3ImportExportAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:PutObject
+                Resource:
+                  - !Sub '${HealthLakeJobsBucket.Arn}'
+                  - !Sub '${HealthLakeJobsBucket.Arn}/*'
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # S3 bucket for HealthLake bulk-import/export staging.
+  # Synthea NDJSON files land here before being imported into HealthLake.
+  # ──────────────────────────────────────────────────────────────
+  HealthLakeJobsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'unified-cw-healthlake-jobs-${AWS::AccountId}-${Environment}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireImportArtifactsAfter30Days
+            Status: Enabled
+            Prefix: import/
+            ExpirationInDays: 30
+          - Id: ExpireExportArtifactsAfter90Days
+            Status: Enabled
+            Prefix: export/
+            ExpirationInDays: 90
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ──────────────────────────────────────────────────────────────
+  # S3 bucket for ambient-documentation outputs (SOAP notes, medical
+  # codes, after-visit summary, transcripts). The provider-workflow
+  # backend reads from this; the SMS Lambda is triggered by events on it.
+  # ──────────────────────────────────────────────────────────────
+  ClinicalOutputsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'unified-cw-clinical-outputs-${AWS::AccountId}-${Environment}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Project
+          Value: amazon-connect-health-unified-clinical-workflow
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  HealthLakeDatastoreId:
+    Description: AWS HealthLake datastore ID (used by both workflow stacks)
+    Value: !GetAtt HealthLakeDatastore.DatastoreId
+    Export:
+      Name: !Sub '${AWS::StackName}-HealthLakeDatastoreId'
+
+  HealthLakeDatastoreArn:
+    Description: AWS HealthLake datastore ARN
+    Value: !GetAtt HealthLakeDatastore.DatastoreArn
+    Export:
+      Name: !Sub '${AWS::StackName}-HealthLakeDatastoreArn'
+
+  HealthLakeDatastoreEndpoint:
+    Description: AWS HealthLake datastore FHIR endpoint URL
+    Value: !GetAtt HealthLakeDatastore.DatastoreEndpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-HealthLakeDatastoreEndpoint'
+
+  HealthLakeJobsRoleArn:
+    Description: >-
+      ARN of the IAM role HealthLake assumes for bulk-import/export jobs.
+      Pass this as the DataAccessRoleArn parameter to StartFHIRImportJob.
+    Value: !GetAtt HealthLakeJobsRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-HealthLakeJobsRoleArn'
+
+  HealthLakeJobsBucketName:
+    Description: S3 bucket for HealthLake bulk-import/export staging
+    Value: !Ref HealthLakeJobsBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-HealthLakeJobsBucketName'
+
+  ClinicalOutputsBucketName:
+    Description: >-
+      S3 bucket where the ambient-documentation pipeline writes SOAP
+      notes, medical codes, after-visit summaries, and transcripts.
+      Used as the S3_OUTPUT_BUCKET env var on the provider-workflow
+      backend.
+    Value: !Ref ClinicalOutputsBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-ClinicalOutputsBucketName'
+
+  ConnectHealthDomainId:
+    Description: >-
+      The Connect Health domain ID this deployment references (mirrors
+      the input parameter). Provided as a stack output for cross-stack
+      consumption.
+    Condition: HasConnectHealthDomain
+    Value: !Ref ConnectHealthDomainId
+    Export:
+      Name: !Sub '${AWS::StackName}-ConnectHealthDomainId'
+
+  DeploymentInstructions:
+    Description: Next steps after this stack deploys
+    Value: !Sub |
+      Shared resources created:
+        * HealthLake datastore: ${HealthLakeDatastore.DatastoreId}
+        * Clinical outputs S3 bucket: ${ClinicalOutputsBucket}
+        * HealthLake jobs S3 bucket: ${HealthLakeJobsBucket}
+        * HealthLake jobs IAM role: ${HealthLakeJobsRole.Arn}
+
+      Next deployment steps:
+        1. If PreloadSyntheaData=false, load your own Synthea data via:
+             python3 shared/healthlake/load-sample-data.py \
+               --datastore-id ${HealthLakeDatastore.DatastoreId} \
+               --jobs-bucket ${HealthLakeJobsBucket} \
+               --jobs-role-arn ${HealthLakeJobsRole.Arn}
+
+        2. Deploy the Bedrock Guardrail:
+             aws cloudformation deploy \
+               --stack-name unified-cw-guardrail \
+               --template-file shared/bedrock-guardrails/healthcare-guardrail.yaml \
+               --capabilities CAPABILITY_NAMED_IAM
+
+        3. Deploy provider-workflow stacks (backend + bridge), passing:
+             HealthLakeDatastoreId=${HealthLakeDatastore.DatastoreId}
+             S3OutputBucket=${ClinicalOutputsBucket}
+
+        4. Deploy care-manager-workflow stack, passing:
+             HealthLakeDatastoreId=${HealthLakeDatastore.DatastoreId}

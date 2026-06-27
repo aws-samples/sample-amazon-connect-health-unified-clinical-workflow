@@ -1,0 +1,48 @@
+openapi: 3.0.0
+info:
+  title: Overdue A1c Action Group
+  version: 1.0.0
+  description: List diabetic patients overdue for A1c testing.
+paths:
+  /overdue-a1c:
+    post:
+      summary: List patients overdue for A1c
+      description: >-
+        Returns patients with Type 2 diabetes who have no A1c reading in the
+        last threshold_months months (default 6).
+      operationId: getOverdueA1c
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                threshold_months:
+                  type: integer
+                  description: Number of months without an A1c that counts as overdue
+                  default: 6
+                  minimum: 3
+                  maximum: 24
+      responses:
+        '200':
+          description: List of overdue patients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_count:
+                    type: integer
+                  patients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        patient_id: {type: string}
+                        name: {type: string}
+                        last_a1c_value: {type: number}
+                        last_a1c_date: {type: string, format: date}
+                        days_since_last_a1c: {type: integer}
+                  disclaimer:
+                    type: string

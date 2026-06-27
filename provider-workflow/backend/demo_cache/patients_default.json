@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "patients": [
+    {
+      "id": "0725e4075c0a604253ba23c24746cc8dea085e10cc6e9a51c309619a1d65137a",
+      "name": "Elena Rodriguez",
+      "given": "Elena",
+      "family": "Rodriguez",
+      "gender": "Female",
+      "birthDate": "1962-07-15",
+      "age": "63 yrs",
+      "mrn": "0725e407"
+    },
+    {
+      "id": "46383dd73c1d282831d3e7c9101d4901497c32345d4e2fcc657c2eaf9d03830d",
+      "name": "Diego Ramirez",
+      "given": "Diego",
+      "family": "Ramirez",
+      "gender": "Male",
+      "birthDate": "1985-11-22",
+      "age": "40 yrs",
+      "mrn": "46383dd7"
+    },
+    {
+      "id": "698345153023e19306b525ad8a6c7eca0cfc22dfff2a21b51945d5175d6d18f2",
+      "name": "Márcia Oliveria",
+      "given": "Márcia",
+      "family": "Oliveria",
+      "gender": "Female",
+      "birthDate": "1963-03-08",
+      "age": "62 yrs",
+      "mrn": "69834515"
+    }
+  ],
+  "count": 3
+}

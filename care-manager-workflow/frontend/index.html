@@ -1,0 +1,144 @@
+<!-- Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved. -->
+<!-- SPDX-License-Identifier: MIT-0 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Care Intelligence Workspace</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div class="top-bar">
+    <div class="top-bar-left">
+        <div class="logo-mark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+        </div>
+        <span class="app-name">Care Intelligence</span>
+        <span class="app-subtitle">Population Health · Powered by Amazon Bedrock</span>
+    </div>
+    <div class="top-bar-right">
+        <div class="status-dot-wrap">
+            <div class="status-dot"></div>
+            <span class="status-label">Live</span>
+        </div>
+        <div class="user-chip">
+            <div class="user-avatar">ML</div>
+            <span class="user-name">Maria Lopez</span>
+            <span class="user-role">Care Manager</span>
+        </div>
+    </div>
+</div>
+<div class="main-layout">
+    <div class="left-rail">
+        <div class="rail-section-label">Quick Queries</div>
+        <button class="rail-btn" onclick="sendQuickQuery('Show me patients who completed appointments recently')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Completed Visits
+        </button>
+        <button class="rail-btn" onclick="sendQuickQuery('Which patients need follow-up care?')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            Needs Follow-up
+        </button>
+        <button class="rail-btn" onclick="sendQuickQuery('List patients who missed appointments')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            No-Shows
+        </button>
+        <button class="rail-btn" onclick="sendQuickQuery('Show me diabetic patients with overdue A1C tests')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Diabetic A1C Gaps
+        </button>
+        <div class="rail-divider"></div>
+        <div class="rail-section-label">Patients</div>
+        <button class="rail-btn" onclick="sendQuickQuery('Give me a summary for Elena Rodriguez')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+            Elena Rodriguez
+        </button>
+        <button class="rail-btn" onclick="sendQuickQuery('Give me a summary for Diego Ramirez')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+            Diego Ramirez
+        </button>
+        <button class="rail-btn" onclick="sendQuickQuery('Give me a summary for Mary Johnson')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+            Mary Johnson
+        </button>
+        <div class="rail-divider"></div>
+        <button class="rail-btn rail-btn-clear" onclick="clearChat()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+            New Session
+        </button>
+    </div>
+    <div class="chat-panel">
+        <div class="chat-header">
+            <div class="agent-identity">
+                <div class="agent-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a4 4 0 014 4v4a4 4 0 01-4 4 4 4 0 01-4-4V6a4 4 0 014-4z"/>
+                        <path d="M6 18a6 6 0 0012 0"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="agent-name">Care Intelligence Agent</div>
+                    <div class="agent-desc">Claude Opus · HealthLake FHIR · 46K+ patients</div>
+                </div>
+            </div>
+            <div class="session-id" id="sessionIdDisplay"></div>
+        </div>
+        <div class="messages-area" id="messagesArea">
+            <div class="msg msg-agent">
+                <div class="msg-avatar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a4 4 0 014 4v4a4 4 0 01-4 4 4 4 0 01-4-4V6a4 4 0 014-4z"/>
+                        <path d="M6 18a6 6 0 0012 0"/>
+                    </svg>
+                </div>
+                <div class="msg-bubble">
+                    <div class="msg-sender">Care Intelligence Agent</div>
+                    <div class="msg-text">
+                        Hello Maria! I'm your Care Intelligence Agent, connected to your HealthLake FHIR data store. I can help you with population health queries, care gap analysis, and patient summaries.<br><br>
+                        Try asking me about <strong>no-shows</strong>, <strong>diabetic patients with overdue labs</strong>, or look up a specific patient. What would you like to explore today?
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator" style="display:none;">
+            <div class="typing-avatar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a4 4 0 014 4v4a4 4 0 01-4 4 4 4 0 01-4-4V6a4 4 0 014-4z"/>
+                    <path d="M6 18a6 6 0 0012 0"/>
+                </svg>
+            </div>
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="typing-label" id="typingLabel">Querying HealthLake...</div>
+        </div>
+        <div class="input-row">
+            <div class="input-wrap">
+                <textarea
+                    id="chatInput"
+                    class="chat-input"
+                    placeholder="Ask about your patient panel... e.g. 'Which patients missed appointments last month?'"
+                    rows="1"
+                    onkeydown="handleKeydown(event)"
+                    oninput="autoResize(this)"></textarea>
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </button>
+        </div>
+        <div class="input-footer">
+            <span>Powered by Amazon Bedrock · Claude Opus · AWS HealthLake</span>
+            <span id="tokenCount"></span>
+        </div>
+    </div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

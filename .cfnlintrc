@@ -1,0 +1,27 @@
+# cfn-lint configuration for this repository
+#
+# Documented suppressions only. Each entry must have a clear justification.
+
+ignore_checks:
+  # health-agent is a real AWS service (Amazon Connect Health). cfn-lint's
+  # service catalog hasn't been updated to include it yet. Once cfn-lint
+  # publishes a release that knows about health-agent, this suppression
+  # should be removed.
+  - W3037
+
+  # I3042 informational: prefer arn:${AWS::Partition}:... over arn:aws:...
+  # The sample targets commercial AWS, not GovCloud/China, so the hardcoded
+  # 'aws' partition is acceptable. Customers deploying to GovCloud should
+  # manually substitute ${AWS::Partition} before deploy.
+  - I3042
+
+ignore_templates:
+  # OpenAPI 3.0 schemas — Bedrock Agent action group contracts, not CloudFormation
+  - care-manager-workflow/bedrock-agent/action-groups/*.yaml
+
+include_checks:
+  # Promote informational checks
+  - I
+
+# Per-template overrides
+# (None currently — add here if a single template needs a specific suppression)

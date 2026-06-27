@@ -1,0 +1,114 @@
+# Build artifacts
+*.zip
+*.jar
+*.class
+*.pyc
+*.pyo
+__pycache__/
+target/
+build/
+dist/
+*.egg-info/
+
+# Python virtual environments
+.venv/
+venv/
+env/
+.python-version
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE / editor
+.vscode/
+.idea/
+.kiro/
+.fleet/
+*.swp
+*.swo
+*~
+.history/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Backup files (any .bak.* variant)
+*.bak
+*.bak.*
+*~
+*.orig
+
+# AWS credentials / secrets (NEVER COMMIT)
+.env
+.env.*
+!.env.example
+.aws/
+credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+secrets.yaml
+secrets.json
+config.local.*
+
+# Recorded API responses outside the demo_cache dir
+*_recording.json
+recorded_*.json
+session-output-*/
+debug-*/
+
+# Documentation working drafts
+*.docx
+*.tmp
+*.scratch
+scratch/
+notes/
+CHANGES_SESSION_*.md
+DRAFT_*.md
+
+# CloudFormation / Terraform state
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+cdk.out/
+
+# Local development helpers (one-off scripts)
+run_*.py
+load_*.py
+update_prompt*.py
+test_gateway_*.py
+bedrock-prompt.txt
+
+# Large model files
+models/
+*.onnx
+*.pt
+*.pth
+
+# Test artifacts
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Java
+*.class
+hs_err_pid*
+
+# Misc
+.cache/
