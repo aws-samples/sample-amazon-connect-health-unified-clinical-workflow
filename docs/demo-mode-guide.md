@@ -23,7 +23,7 @@ patients:
 ## Setup
 
 ```bash
-git clone https://gitlab.aws.dev/[YOUR-USERNAME]/sample-amazon-connect-health-unified-clinical-workflow.git
+git clone https://github.com/aws-samples/sample-amazon-connect-health-unified-clinical-workflow.git
 cd sample-amazon-connect-health-unified-clinical-workflow
 
 # Install local pre-commit hook (optional but recommended)

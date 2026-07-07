@@ -1,0 +1,62 @@
+# Third-Party Licenses
+
+This project includes or depends on the following third-party software and
+data assets. Each is used under its respective license as noted below.
+
+Users deploying this sample are responsible for reviewing the terms of each
+dependency and ensuring their own use complies with those terms.
+
+---
+
+## Sample Data
+
+### Synthea (synthetic FHIR patient records)
+- **Source:** https://synthea.mitre.org/
+- **Project:** SyntheticMass / Synthea, The MITRE Corporation
+- **License:** Apache License 2.0
+- **Usage:** All FHIR patient records (Encounter, Condition, Observation,
+  MedicationRequest, DocumentReference, and related resources) used for
+  local demo mode and HealthLake preload are Synthea-generated synthetic
+  data. **No real patient data (PHI) is included in this repository.**
+- **License text:** https://www.apache.org/licenses/LICENSE-2.0
+
+---
+
+## Python Runtime Dependencies
+
+The following packages are declared in the `requirements.txt` files under
+`provider-workflow/backend/`, `care-manager-workflow/backend/`, and
+`care-manager-workflow/bedrock-agent/lambdas/`. Full license terms are
+distributed with each package on the Python Package Index (PyPI).
+
+| Package         | License        | Project URL                                      |
+|-----------------|----------------|--------------------------------------------------|
+| Flask           | BSD-3-Clause   | https://flask.palletsprojects.com/               |
+| Flask-CORS      | MIT            | https://github.com/corydolphin/flask-cors        |
+| boto3           | Apache 2.0     | https://github.com/boto/boto3                    |
+| botocore        | Apache 2.0     | https://github.com/boto/botocore                 |
+| requests        | Apache 2.0     | https://github.com/psf/requests                  |
+| gunicorn        | MIT            | https://gunicorn.org/                            |
+
+Transitive dependencies pulled in by the above packages remain under their
+respective upstream licenses; consult PyPI or each package's repository
+for the authoritative terms.
+
+---
+
+## AWS Services and SDKs
+
+This project invokes AWS services (Amazon Connect, Amazon Connect Health,
+Amazon HealthLake, Amazon Bedrock, AWS Lambda, Amazon S3, Amazon ECS,
+Amazon CloudFront, AWS IAM, Amazon Pinpoint SMS) via the AWS SDK for Python
+(boto3). Use of AWS services is governed by the AWS Customer Agreement and
+applicable service terms at https://aws.amazon.com/legal/.
+
+The AWS SDK itself is licensed under Apache 2.0 (see boto3/botocore above).
+
+---
+
+## This Project
+
+This project itself is released under the **MIT No Attribution (MIT-0)**
+license. See the `LICENSE` file at the repository root.

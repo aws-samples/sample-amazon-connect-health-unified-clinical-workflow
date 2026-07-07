@@ -5,7 +5,15 @@ All notable changes to this sample are documented here. This project follows
 
 ## [Unreleased]
 
+### Added
+- `THIRD-PARTY-LICENSES` file documenting Synthea (Apache 2.0, MITRE)
+  and Python runtime dependencies (Flask, Flask-CORS, boto3, botocore,
+  requests, gunicorn) — required for aws-samples publication.
+
 ### Changed
+- Repository clone URLs in `README.md` and `docs/demo-mode-guide.md`
+  updated from internal GitLab to the target `github.com/aws-samples`
+  destination in preparation for public publication.
 - Minor text edits and restructure: reordered README to lead with
   "What this sample shows" → "Architecture" → "Repository structure"
   before audience routing; replaced em-dashes in prose with colons
