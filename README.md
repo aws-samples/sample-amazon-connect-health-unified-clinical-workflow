@@ -55,7 +55,7 @@ AI-generated SOAP notes and medical codes before they land in AWS HealthLake.
 
 ![Provider workflow architecture — Amazon Connect → Amazon Connect Health (ambient documentation, medical coding) → Amazon S3 outputs → Clinician approval → AWS HealthLake FHIR write-back → Amazon SNS SMS after-visit summary](docs/images/figure-1-provider-workflow.png)
 
-*Source: [`docs/images/figure-1-provider-workflow.pdf`](docs/images/figure-1-provider-workflow.pdf) (draw.io editable).*
+*Source: [`docs/images/figure-1-provider-workflow.pdf`](docs/images/figure-1-provider-workflow.pdf).*
 
 ### Figure 2 — Care manager workflow
 
@@ -66,7 +66,7 @@ answer. No ETL, no batch — today's encounter is queryable today.
 
 ![Care manager workflow architecture — Care Intelligence UI → Flask proxy on ECS Fargate → Amazon Bedrock Agent with 6 action groups (patient summary, recent visit, A1c trend, overdue A1c, no-show, diabetic risk) → AWS HealthLake FHIR queries](docs/images/figure-2-care-manager-workflow.png)
 
-*Source: [`docs/images/figure-2-care-manager-workflow.pdf`](docs/images/figure-2-care-manager-workflow.pdf) (draw.io editable).*
+*Source: [`docs/images/figure-2-care-manager-workflow.pdf`](docs/images/figure-2-care-manager-workflow.pdf).*
 
 For the full architecture narrative and ASCII flow diagrams, see
 [`docs/architecture.md`](docs/architecture.md).
