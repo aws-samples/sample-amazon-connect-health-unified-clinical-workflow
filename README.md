@@ -47,9 +47,29 @@ The two workflows share one Amazon Connect Health domain and one HealthLake
 datastore, the data the clinician writes is the data the care manager
 reads.
 
-> 📊 **Architecture diagram coming soon.** A polished diagram is being
-> prepared as a PNG. For now, see the ASCII flow diagrams in
-> [`docs/architecture.md`](docs/architecture.md) for both workflows.
+### Figure 1 — Provider workflow
+
+A clinician answers a verified call, has a natural conversation while Amazon
+Connect Health listens and structures the encounter, then reviews and approves
+AI-generated SOAP notes and medical codes before they land in AWS HealthLake.
+
+![Provider workflow architecture — Amazon Connect → Amazon Connect Health (ambient documentation, medical coding) → Amazon S3 outputs → Clinician approval → AWS HealthLake FHIR write-back → Amazon SNS SMS after-visit summary](docs/images/figure-1-provider-workflow.png)
+
+*Source: [`docs/images/figure-1-provider-workflow.pdf`](docs/images/figure-1-provider-workflow.pdf) (draw.io editable).*
+
+### Figure 2 — Care manager workflow
+
+A care manager asks natural-language population-health questions. An Amazon
+Bedrock Agent reasons over the request, invokes the right action-group Lambda,
+retrieves FHIR resources from HealthLake, and composes an evidence-linked
+answer. No ETL, no batch — today's encounter is queryable today.
+
+![Care manager workflow architecture — Care Intelligence UI → Flask proxy on ECS Fargate → Amazon Bedrock Agent with 6 action groups (patient summary, recent visit, A1c trend, overdue A1c, no-show, diabetic risk) → AWS HealthLake FHIR queries](docs/images/figure-2-care-manager-workflow.png)
+
+*Source: [`docs/images/figure-2-care-manager-workflow.pdf`](docs/images/figure-2-care-manager-workflow.pdf) (draw.io editable).*
+
+For the full architecture narrative and ASCII flow diagrams, see
+[`docs/architecture.md`](docs/architecture.md).
 
 | Layer | Provider workflow | Care manager workflow |
 |---|---|---|
@@ -61,7 +81,6 @@ reads.
 | Data plane | AWS HealthLake (FHIR R4) + Amazon S3 (clinical outputs) | AWS HealthLake (FHIR R4) |
 | Patient comms | S3 event → AWS Lambda → Amazon SNS (SMS) | _(not applicable)_ |
 
-For the full architecture, see [`docs/architecture.md`](docs/architecture.md).
 
 ## Repository structure
 

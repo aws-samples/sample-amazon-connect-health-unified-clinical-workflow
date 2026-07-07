@@ -6,6 +6,9 @@ All notable changes to this sample are documented here. This project follows
 ## [Unreleased]
 
 ### Added
+- Architecture diagrams as PNGs (`docs/images/figure-1-provider-workflow.png`,
+  `docs/images/figure-2-care-manager-workflow.png`) with editable draw.io
+  PDF sources, embedded in the README's Architecture section.
 - `THIRD-PARTY-LICENSES` file documenting Synthea (Apache 2.0, MITRE)
   and Python runtime dependencies (Flask, Flask-CORS, boto3, botocore,
   requests, gunicorn) — required for aws-samples publication.
