@@ -1,0 +1,62 @@
+# Auto-merge patch and minor Dependabot pull requests.
+#
+# What this does:
+#   - Runs on every pull_request event authored by dependabot[bot].
+#   - Fetches Dependabot's metadata for the PR (update-type, dependency type).
+#   - Auto-approves and enables auto-merge (squash) for patch and minor bumps.
+#   - Leaves major-version bumps alone for a human to review and merge.
+#
+# Why:
+#   Sample repositories accumulate dependency updates continuously. Patch and
+#   minor security bumps are low-risk (semver contract), so we let GitHub merge
+#   them automatically once required checks pass. Major bumps can be breaking
+#   and get human review.
+#
+# References:
+#   https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions
+#   https://github.com/dependabot/fetch-metadata
+
+name: Dependabot auto-merge
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    # Only run for PRs opened by Dependabot itself.
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Approve patch and minor bumps
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge (squash) for patch and minor bumps
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on major-version bumps requiring human review
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr comment "$PR_URL" --body \
+            "🔎 **Major version bump — human review required.** This workflow only auto-merges patch and minor updates. A repository maintainer should review this PR for breaking changes before merging."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

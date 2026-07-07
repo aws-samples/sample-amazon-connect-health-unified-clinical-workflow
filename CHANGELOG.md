@@ -6,6 +6,12 @@ All notable changes to this sample are documented here. This project follows
 ## [Unreleased]
 
 ### Added
+- Dependabot configuration (`.github/dependabot.yml`) scanning Maven,
+  Python, and GitHub Actions dependencies weekly, with grouped
+  patch/minor updates per ecosystem.
+- Auto-merge workflow (`.github/workflows/dependabot-auto-merge.yml`)
+  that approves and merges patch/minor Dependabot PRs automatically
+  and leaves major-version bumps for human review.
 - Architecture diagrams as PNGs (`docs/images/figure-1-provider-workflow.png`,
   `docs/images/figure-2-care-manager-workflow.png`) with editable draw.io
   PDF sources, embedded in the README's Architecture section.

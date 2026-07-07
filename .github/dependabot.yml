@@ -1,0 +1,89 @@
+# Dependabot configuration for sample-amazon-connect-health-unified-clinical-workflow.
+#
+# What this does:
+#   - Scans Java (Maven), Python (pip), and GitHub Actions dependencies weekly.
+#   - Groups all patch and minor updates per ecosystem into a single PR per week
+#     to reduce noise (auto-merged via .github/workflows/dependabot-auto-merge.yml).
+#   - Leaves major-version bumps as individual PRs for human review.
+#
+# Reference: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Java bridge (Maven, in provider-workflow/bridge/pom.xml)
+  - package-ecosystem: "maven"
+    directory: "/provider-workflow/bridge"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "java"
+    groups:
+      java-patch-and-minor:
+        applies-to: version-updates
+        update-types:
+          - "patch"
+          - "minor"
+
+  # Provider workflow backend (Python)
+  - package-ecosystem: "pip"
+    directory: "/provider-workflow/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    groups:
+      python-patch-and-minor:
+        applies-to: version-updates
+        update-types:
+          - "patch"
+          - "minor"
+
+  # Care manager backend (Python)
+  - package-ecosystem: "pip"
+    directory: "/care-manager-workflow/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    groups:
+      python-patch-and-minor:
+        applies-to: version-updates
+        update-types:
+          - "patch"
+          - "minor"
+
+  # Bedrock action-group Lambdas (Python)
+  - package-ecosystem: "pip"
+    directory: "/care-manager-workflow/bedrock-agent/lambdas"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    groups:
+      python-patch-and-minor:
+        applies-to: version-updates
+        update-types:
+          - "patch"
+          - "minor"
+
+  # GitHub Actions workflows themselves
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "github-actions"
