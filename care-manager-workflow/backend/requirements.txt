@@ -1,6 +1,6 @@
 # Care Manager backend — minimal production deps.
 # Pinned for reproducibility; bump after testing.
-boto3>=1.34.0
+boto3>=1.43.51
 flask>=3.0.0
 flask-cors>=4.0.0
 gunicorn>=21.2.0
